@@ -57,10 +57,18 @@
     <article class="reveal"><strong>−0.098</strong><span>Spearman correlation: local shadow price versus realized advantage</span><small>28 selected counterfactual interventions</small></article>
   </section>
 
+  <nav class="parts-nav reveal" aria-label="Research narrative">
+    <a href="#system"><span>I</span>Problem</a>
+    <a href="#learning"><span>II</span>What we built</a>
+    <a href="#replay"><span>III</span>Experiments</a>
+    <a href="#counterfactual"><span>IV</span>What we found</a>
+    <a href="#ledger"><span>V</span>What comes next</a>
+  </nav>
+
   <section class="section" id="system">
     <div class="section-head reveal">
       <div>
-        <p class="eyebrow">01 / The control problem</p>
+        <p class="eyebrow">Part I · The problem</p>
         <h2>A bid is a decision made before the price is known.</h2>
       </div>
       <p>The controller sees trailing prices and battery inventory. It submits a price-contingent charge and discharge curve. The market then clears that curve against an unknown price. The reserve row changes what the optimizer may offer, not what the market will accept.</p>
@@ -124,10 +132,41 @@
     </div>
   </section>
 
+  <section class="section" id="learning">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow">Part II · What we built</p>
+        <h2>Learning did real work. It did not win.</h2>
+      </div>
+      <p>We trained and evaluated learned critics, decision-focused selection and cross-entropy search. The honest result is a modest, regime-dependent learned gain—not a controller that beats every tuned baseline.</p>
+    </div>
+    <div class="evidence-grid">
+      <article class="evidence-card reveal">
+        <span class="tag teal">Learned critic</span>
+        <h3>+3,695 AUD</h3>
+        <p>Stress total over the hand-designed value at R = 6, with +758 AUD five-window mean. V22 later showed this is not robust to tuning the hand value on non-evaluation periods.</p>
+      </article>
+      <article class="evidence-card reveal">
+        <span class="tag rust">Paired seeds</span>
+        <h3>+619 / +3,076 / −326</h3>
+        <p>October, June and December AUD versus hand value at R = 6. The learned value wins 5/5 seeds in October and June but loses 5/5 in December: real, but regime-dependent.</p>
+      </article>
+      <article class="evidence-card reveal">
+        <span class="tag slate">SPO+ and CEM</span>
+        <h3>Alias / repositioned</h3>
+        <p>The SPO+ selector equals the point-MPC alias, not an independent success. CEM reserve search is dominated by the tuned-constant challenge: R = 15.80 captures 90.1% of V46's total gain.</p>
+      </article>
+    </div>
+    <details class="learning-details reveal">
+      <summary>What does this mean for the oral defense?</summary>
+      <p>The final V46 reserve rule is hand-designed. The project does not claim a learned controller that beats the tuned constant. The learning experiments are evidence about evaluation design, regime dependence and the difficulty of turning a local value estimate into a reliable policy improvement.</p>
+    </details>
+  </section>
+
   <section class="section" id="boundary">
     <div class="section-head reveal">
       <div>
-        <p class="eyebrow">02 / Constraint geometry</p>
+        <p class="eyebrow">Part II · What we built</p>
         <h2>Move the inventory. Watch the feasible action change.</h2>
       </div>
       <p>The shaded strip is the exact region where the V46 rule differs from <code>R = 16</code>. The sliders change the geometry of the admissible offer, not the market price or the bid optimizer.</p>
@@ -167,7 +206,7 @@
   <section class="section" id="bids">
     <div class="section-head reveal">
       <div>
-        <p class="eyebrow">03 / Bidding microscope</p>
+        <p class="eyebrow">Part II · What we built</p>
         <h2>See the actual optimizer, not only the allowance.</h2>
       </div>
       <p>Choose a saved event and inventory level. The chart shows the LP's actual discharge offers by price band for all three controllers, plus the realized price and cleared discharge.</p>
@@ -199,7 +238,7 @@
   <section class="section" id="replay">
     <div class="section-head reveal">
       <div>
-        <p class="eyebrow">04 / Saved trajectories</p>
+        <p class="eyebrow">Part III · Experiments</p>
         <h2>Follow two controllers through the same market.</h2>
       </div>
       <p>These are real seven-day V27 runs, exported from the simulator. The browser switches between saved arrays; it does not rerun the LP. Select an event and a day, then scrub or play.</p>
@@ -233,7 +272,7 @@
   <section class="section" id="atlas">
     <div class="section-head reveal">
       <div>
-        <p class="eyebrow">05 / The empirical atlas</p>
+        <p class="eyebrow">Part III · Experiments</p>
         <h2>All fourteen events. Both baselines.</h2>
       </div>
       <p>The five selection events and nine complementary events are shown together. Switch between the coarse scalar R = 16 and the tuned constant R = 15.80; the apparent advantage changes materially.</p>
@@ -272,7 +311,7 @@
   <section class="section" id="counterfactual">
     <div class="section-head reveal">
       <div>
-        <p class="eyebrow">06 / The counterfactual fork</p>
+        <p class="eyebrow">Part IV · What we found</p>
         <h2>Same sign of shadow price. Opposite sign of long-run value.</h2>
       </div>
       <p>Both interventions are in the February 2024 cluster. Both have a positive reserve-row shadow. Their future value diverges because the remaining price path changes what the stored energy is worth.</p>
@@ -310,7 +349,7 @@
   <section class="section" id="inverse">
     <div class="section-head reveal">
       <div>
-        <p class="eyebrow">07 / Inverse-optimization lab</p>
+        <p class="eyebrow">Part IV · What we found</p>
         <h2>Does one common V implement the whole family?</h2>
       </div>
       <p>A single bid can satisfy KKT and still fail to be part of one inventory-dependent policy. Choose an event and slope cap; filled markers are converged fixed-weight certificates, open markers are unresolved.</p>
@@ -347,7 +386,7 @@
   <section class="section" id="ledger">
     <div class="section-head reveal">
       <div>
-        <p class="eyebrow">08 / Research ledger</p>
+        <p class="eyebrow">Part V · What comes next</p>
         <h2>What we tried, what survived, what changed.</h2>
       </div>
       <p>Each row is a research family, not a version number. Expand for the method, strongest baseline, outcome and correction.</p>
@@ -387,7 +426,7 @@
   <section class="section" id="evidence">
     <div class="section-head reveal">
       <div>
-        <p class="eyebrow">09 / Evidence and limits</p>
+        <p class="eyebrow">Part V · Evidence and limits</p>
         <h2>What survives, and what the experiment does not prove.</h2>
       </div>
       <p>The economic comparison uses a reused 14-event validation panel. The complement was excluded from parameter selection but is not a fresh holdout. No FWER claim is made.</p>
@@ -442,18 +481,24 @@
       </details>
     </div>
 
-    <div class="downloads reveal" aria-label="Downloads">
-      <a class="download" href="downloads/final_report.pdf">Final report PDF ↗</a>
-      <a class="download" href="downloads/presentation.pdf">Slides PDF ↗</a>
-      <a class="download" href="downloads/solar-storage-poster.pdf">A1 poster PDF ↗</a>
-      <a class="download" href="downloads/v49_events14.csv">V49 14-event results CSV ↓</a>
-      <a class="download" href="downloads/v49_verification.json">V49 verification JSON ↗</a>
-      <a class="download" href="downloads/v49_provenance.json">V49 SHA256 provenance ↗</a>
-      <a class="download" href="https://github.com/mohamedsamirx/rl-final-project-site">Public site source ↗</a>
+    <div class="downloads primary-downloads reveal" aria-label="Primary links">
+      <a class="download" href="downloads/solar-storage-poster.pdf">Scientific poster · A1 PDF ↗</a>
       <a class="download" href="https://github.com/mohamedsamirx/RL_Final_Project">Research code · private ↗</a>
-      <a class="download" href="downloads/CODE_ACCESS.md">Code access note ↗</a>
-      <a class="download" href="archive.html">Earlier research archive ↗</a>
+      <a class="download" href="archive.html">Earlier experiments ↗</a>
     </div>
+
+    <details class="artifact-details reveal">
+      <summary>Research artifacts and reproducibility</summary>
+      <div class="downloads" aria-label="Research artifacts">
+        <a class="download" href="downloads/final_report.pdf">Final report PDF ↗</a>
+        <a class="download" href="downloads/presentation.pdf">Slides PDF ↗</a>
+        <a class="download" href="downloads/v49_events14.csv">V49 14-event results CSV ↓</a>
+        <a class="download" href="downloads/v49_verification.json">V49 verification JSON ↗</a>
+        <a class="download" href="downloads/v49_provenance.json">V49 SHA256 provenance ↗</a>
+        <a class="download" href="https://github.com/mohamedsamirx/rl-final-project-site">Public site source ↗</a>
+        <a class="download" href="downloads/CODE_ACCESS.md">Code access note ↗</a>
+      </div>
+    </details>
   </section>
 </main>
 
