@@ -19,6 +19,11 @@ That repository is **private**. Course reviewers who need the research code
 must be invited as collaborators by the owner. The website labels this link as
 private and does not imply that it is publicly readable.
 
+**Before submission:** the owner should invite the instructor and any authorized
+graders as read-only collaborators on `RL_Final_Project`. GitHub usernames are
+required for that invitation. No public release of the research repository is
+required by the course instructions.
+
 ## Why the split
 
 The public repository contains only the built static website and final
