@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "release": "V49.3.2",
+  "timezone": "NEM / UTC+10 (fixed; no browser conversion)",
+  "events": 14,
+  "selection_events": 5,
+  "complement_events": 9,
+  "comparisons": {
+    "vs_scalar_r16": {
+      "mean_aud": 147.217599143,
+      "total_aud": 2061.046388,
+      "wins": 14
+    },
+    "vs_constant_r1580": {
+      "mean_aud": 14.551895643,
+      "total_aud": 203.726539,
+      "wins": 5
+    }
+  },
+  "counterfactuals": {
+    "t443": {
+      "t": 443,
+      "horizon_intervals": 1860,
+      "advantage_aud": -584.502035,
+      "reconciled_endpoint_aud": -584.502035,
+      "reserve_shadow_aud_mwh": 72.087955,
+      "cleared_delta_mw": 3.305582
+    },
+    "t516": {
+      "t": 516,
+      "horizon_intervals": 1787,
+      "advantage_aud": 833.907463,
+      "reconciled_endpoint_aud": 833.907463,
+      "reserve_shadow_aud_mwh": 172.631789,
+      "cleared_delta_mw": 3.805927
+    }
+  },
+  "inverse": {
+    "main_converged": 13,
+    "main_unconverged": 5,
+    "robust_converged": 49,
+    "robust_unconverged": 14,
+    "robust_representable": 0,
+    "statement": "fixed-weight certificates; no universal CVaR-subgradient theorem"
+  },
+  "replay": {
+    "events": 3,
+    "policies": 3,
+    "intervals": 2016,
+    "cumulative_chart": "terminal-adjusted net value"
+  }
+}
