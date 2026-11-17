@@ -6,7 +6,7 @@
 - Public site source: https://github.com/mohamedsamirx/rl-final-project-site
 - V49 data bundle: `website/../v49_data.json` in the public site repository
 - V49 event CSV, verification JSON, provenance JSON: `downloads/` on the public site
-- Final report, slides, A1 poster: `downloads/` on the public site
+- Slides and A1 poster: `downloads/` on the public site
 
 ## Research repository
 
