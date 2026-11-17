@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Interactive reserve selector for the V21 solar-battery study. Compare actual saved October 2026 trajectories at 0, 2, 4, 6 and 8 MWh inventory floors.">
+<title>Reserve selector — Solar × Storage</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23162c36'/%3E%3Ccircle cx='32' cy='32' r='15' fill='none' stroke='%23b96a19' stroke-width='5'/%3E%3Cpath d='M32 12v8M32 44v8M12 32h8M44 32h8' stroke='%23f7f5ee' stroke-width='4'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<style>
+  .selector-hero{padding-top:58px}
+  .selector-hero h1{font-size:clamp(40px,6vw,82px);letter-spacing:-4px}
+  .selector-hero .intro{max-width:1120px}
+  .selector-hero .intro p{font-size:17px}
+  .selector-controls{display:flex;flex-wrap:wrap;gap:10px;margin:28px 0 22px}
+  .reserve-button{appearance:none;border:1px solid var(--line);background:#fffdf7;color:var(--ink);padding:12px 18px;min-width:128px;text-align:left;cursor:pointer;font:inherit;transition:background .15s,border-color .15s,transform .15s}
+  .reserve-button:hover{border-color:var(--blue);transform:translateY(-1px)}
+  .reserve-button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .reserve-button span{display:block;font:700 20px 'Manrope',sans-serif;line-height:1.1}
+  .reserve-button small{display:block;font-size:11px;color:var(--muted);margin-top:4px;line-height:1.3}
+  .reserve-button[aria-pressed="true"] small{color:#d9e2e2}
+  .selection-note{font-size:13px;color:var(--muted);margin:0 0 24px;max-width:78ch}
+  .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin:30px 0 6px}
+  .summary-card{background:#fffdf7;border:1px solid var(--line);padding:18px 18px 15px}
+  .summary-card .label{display:block;font-size:11px;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);font-weight:700;line-height:1.35;min-height:2.7em}
+  .summary-card strong{display:block;font:600 clamp(25px,3vw,38px) 'Manrope',sans-serif;letter-spacing:-1.2px;line-height:1.1;margin:7px 0 3px}
+  .summary-card small{display:block;color:var(--muted);font-size:12px;line-height:1.4}
+  .summary-sub{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin:0 0 12px}
+  .summary-sub div{border-top:1px solid var(--line);padding-top:10px;font-size:12px;color:var(--muted)}
+  .summary-sub strong{color:var(--ink);font-weight:700}
+  .chart-wrap{position:relative;margin:24px 0 0;background:#fffdf7;border:1px solid var(--line);padding:12px 8px 4px}
+  #reserveChart{display:block;width:100%;height:auto;touch-action:pan-y}
+  .chart-tooltip{position:fixed;z-index:20;pointer-events:none;background:var(--ink);color:#fff;padding:9px 11px;font-size:12px;line-height:1.55;max-width:250px;box-shadow:0 4px 16px rgba(22,44,54,.18);opacity:0;transition:opacity .08s}
+  .chart-tooltip.is-visible{opacity:1}
+  .chart-tooltip strong{display:block;font-weight:700;margin-bottom:2px}
+  .chart-tooltip span{display:block;color:#d9e2e2}
+  .chart-legend{display:flex;flex-wrap:wrap;gap:18px;margin:10px 4px 2px;font-size:12px;color:var(--muted)}
+  .chart-legend i{display:inline-block;width:20px;height:2px;vertical-align:middle;margin-right:6px}
+  .hover-readout{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:12px 4px 0;font-size:12px;color:var(--muted);min-height:38px}
+  .hover-readout strong{display:block;color:var(--ink);font-size:15px}
+  .scroll{overflow-x:auto}
+  .reserve-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:20px;background:#fffdf7}
+  .reserve-table th,.reserve-table td{padding:10px 9px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+  .reserve-table th:first-child,.reserve-table td:first-child{text-align:left}
+  .reserve-table thead th{font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);vertical-align:bottom}
+  .reserve-table tbody tr[data-active="true"]{background:#eef1eb}
+  .reserve-table button{appearance:none;border:0;background:none;color:var(--blue);font:inherit;font-weight:700;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px}
+  .table-note{font-size:12px;color:var(--muted);margin:10px 0 0;max-width:90ch}
+  .guarantee{display:grid;grid-template-columns:1.2fr 1fr;gap:42px;align-items:start}
+  .guarantee p{color:var(--muted)}
+  .guarantee-card{background:#fffdf7;border-left:3px solid var(--gold);padding:18px 20px}
+  .guarantee-card h3{margin-top:0}
+  .formula{font:600 17px/1.6 'Manrope',sans-serif;color:var(--ink);background:#eef1eb;padding:15px 17px;display:inline-block}
+  .disclaimer{border-top:1px solid var(--line);margin-top:36px;padding-top:18px;font-size:12px;color:var(--muted);max-width:100ch}
+  @media(max-width:900px){.summary-grid,.summary-sub{grid-template-columns:repeat(2,1fr)}.guarantee{grid-template-columns:1fr}}
+  @media(max-width:700px){.chart-wrap{overflow-x:auto}#reserveChart{width:900px;max-width:none}}
+  @media(max-width:620px){.summary-grid,.summary-sub{grid-template-columns:1fr}.selector-hero h1{letter-spacing:-2px}.reserve-button{min-width:calc(50% - 6px);flex:1}.hover-readout{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <a class="wordmark" href="index.html">SOLAR <span>×</span> STORAGE</a>
+  <nav aria-label="Main">
+    <a href="index.html#results">Results</a>
+    <a href="index.html#replay">Dispatch lab</a>
+    <a href="reserve_selector.html" aria-current="page">Reserve selector</a><a href="dynamics.html">Dynamics</a><a href="theory.html">Theory</a>
+    <a href="downloads/solar-storage-poster.pdf">Poster ↗</a>
+  </nav>
+</header>
+<main>
+<section class="hero selector-hero">
+  <p class="eyebrow">V21 · Interactive reserve selector</p>
+  <h1>How much should<br><em>the battery hold back?</em></h1>
+  <div class="intro">
+    <p>A six-band bid can reserve stored energy for rare high-price intervals. The reserve is an inventory floor: if the battery starts at or above <em>R</em> MWh, ordinary-price discharge cannot take it below <em>R</em>.</p>
+    <p>These controls select <strong>actual saved October 2026 trajectories</strong> at five reserve levels. The page does not retrain a model, re-solve a bid, or submit anything to a market.</p>
+  </div>
+</section>
+
+<section id="selector">
+  <p class="eyebrow">01 / Choose the inventory floor</p>
+  <h2 id="selectorHeading">Reserve level</h2>
+  <div class="selector-controls" id="reservePicker" role="group" aria-label="Reserve level in MWh"></div>
+  <p class="selection-note" id="selectionNote" aria-live="polite">Loading saved trajectories…</p>
+
+  <div class="summary-grid" id="summaryGrid" aria-live="polite">
+    <article class="summary-card"><span class="label">October battery uplift</span><strong id="cardOct">—</strong><small>Actual October saved run</small></article>
+    <article class="summary-card"><span class="label">October spike capture</span><strong id="cardCapture">—</strong><small>Of perfect-foresight battery spike revenue</small></article>
+    <article class="summary-card"><span class="label">June battery uplift</span><strong id="cardJune">—</strong><small>Five-seed fixed-reserve summary</small></article>
+    <article class="summary-card"><span class="label">Five-window mean</span><strong id="cardMean">—</strong><small>Oct, Jun, Dec, Jul, Nov</small></article>
+  </div>
+  <div class="summary-sub" id="summarySub">
+    <div>Pre-spike SOC <strong id="cardSoc">—</strong></div>
+    <div>Missed spike intervals <strong id="cardMissed">—</strong></div>
+    <div>Calm cost vs R=0 <strong id="cardCalm">—</strong></div>
+    <div>Worst window <strong id="cardWorst">—</strong></div>
+  </div>
+
+  <div class="chart-wrap" id="chartWrap">
+    <svg id="reserveChart" viewBox="0 0 1040 560" role="img" aria-label="October price, stored energy and battery discharge for the selected reserve level"></svg>
+    <div class="chart-tooltip" id="chartTooltip" aria-hidden="true"></div>
+  </div>
+  <div class="chart-legend" aria-hidden="true">
+    <span><i style="background:#162c36"></i>Energy price (log-like scale)</span>
+    <span><i style="background:#226b91"></i>Stored energy before dispatch</span>
+    <span><i style="background:#b96a19"></i>Battery discharge</span>
+    <span><i style="background:#ae4937;height:8px;width:8px;border-radius:50%"></i>Price ≥ 5,000 AUD/MWh</span>
+  </div>
+  <div class="hover-readout" id="hoverReadout" aria-live="off">
+    <div>Timestamp<strong id="hoverTime">—</strong></div>
+    <div>Energy price<strong id="hoverPrice">—</strong></div>
+    <div>Stored energy<strong id="hoverSoc">—</strong></div>
+    <div>Discharge<strong id="hoverDischarge">—</strong></div>
+  </div>
+  <p class="caption">Window: <span id="windowLabel">—</span>. All values are five-minute interval-ending observations in fixed NEM time (UTC+10). The price axis uses a signed log transform so ordinary prices and spikes remain visible together. Hover or tap the chart for exact interval values; on a narrow screen, scroll the chart horizontally.</p>
+</section>
+
+<section>
+  <p class="eyebrow">02 / Compare the five runs</p>
+  <h2>One floor,<br>five outcomes.</h2>
+  <div class="scroll">
+    <table class="reserve-table" id="reserveTable">
+      <caption class="caption" style="text-align:left;padding:0 0 10px">Saved October run plus the fixed-reserve five-seed summary. Click a reserve label to switch the charts.</caption>
+      <thead>
+        <tr>
+          <th scope="col">Reserve</th>
+          <th scope="col">October uplift<br>AUD</th>
+          <th scope="col">October capture</th>
+          <th scope="col">June uplift<br>AUD</th>
+          <th scope="col">Calm cost<br>vs R=0</th>
+          <th scope="col">Five-window<br>mean AUD</th>
+          <th scope="col">Worst window<br>AUD</th>
+          <th scope="col">Pre-spike SOC<br>MWh</th>
+          <th scope="col">Missed spike<br>intervals</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <p class="table-note">October uplift is the saved seed-42 trajectory. June, calm and five-window columns use the V20 fixed-reserve summary; the seed-42 October path can differ slightly from the five-seed attribution means. “Calm cost” is revenue given up across December, July and November relative to R=0.</p>
+</section>
+
+<section>
+  <p class="eyebrow">03 / What the floor guarantees</p>
+  <div class="guarantee">
+    <div>
+      <h2>A conditional<br>inventory guarantee.</h2>
+      <p class="formula">(Δt / η<sub>d</sub>) · Σ<sub>ordinary bands</sub> q<sub>d,b</sub> ≤ max(0, E<sub>t</sub> − R)</p>
+      <p>If the battery enters an interval with at least <strong>R</strong> MWh, every clearing ordinary-price band is covered by this single deterministic row, no spike-price band clears, and charging is nonnegative, then the next stored energy is at least <strong>R</strong>.</p>
+    </div>
+    <aside class="guarantee-card">
+      <h3>What it does not promise</h3>
+      <p>It does not guarantee that a high-price band has positive quantity, that a spike is captured, or that the reserve is economically optimal. It protects inventory only. The V21 study separates that protection from the learned and hand-designed bid quantities that decide whether the reserve is used.</p>
+      <p>Across R=0/2/4/6/8, the learned critic's stress premium over a hand-designed value falls from +12.7k AUD to +2.0k AUD: the reserve substitutes for learned inventory protection. <a href="https://github.com/mohamedsamirx/RL_Final_Project/blob/main/reports/v21_reserve_sweep/README.md">Reserve-level sweep</a>.</p>
+      <p><a href="https://github.com/mohamedsamirx/RL_Final_Project/blob/main/reports/v21_attribution/README.md">Read the V21 report</a> · <a href="https://github.com/mohamedsamirx/RL_Final_Project/blob/main/docs/v21_reserve_guarantee.md">proof and scope</a></p>
+    </aside>
+  </div>
+  <p class="disclaimer">Source: <code>website/reserve_data.json</code>, generated from <code>qp_grid6_seed_42.pt</code> by <code>scripts/build_reserve_selector_data.py</code>. The site is a static, precomputed presentation; browser controls only select saved values. Past simulated performance is not a forecast or commercial advice. The conditional guarantee is a model property under the stated assumptions, not a market-compliance claim.</p>
+</section>
+</main>
+<footer><span>SOLAR × STORAGE / IFT6162</span><span>V21 reserve selector · Audited model results</span></footer>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const money = n => Number(n).toLocaleString('en-AU',{maximumFractionDigits:0});
+const money1 = n => Number(n).toLocaleString('en-AU',{minimumFractionDigits:1,maximumFractionDigits:1});
+const pct = n => `${(Number(n)*100).toFixed(1)}%`;
+const state = {data:null, selected:6, rows:null};
+const W=1040,H=560,L=70,R=18;
+const pTop=30,pBottom=180,sTop=220,sBottom=340,dTop=380,dBottom=480;
+const pMin=-10,pMax=23200;
+const symlog = v => Math.sign(v)*Math.log10(1+Math.abs(v)/10);
+const dateLabel = iso => {
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[Number(iso.slice(5,7))-1]} ${Number(iso.slice(8,10))}`;
+};
+const timeLabel = iso => `${iso.slice(0,10)} ${iso.slice(11,16)}`;
+
+async function init(){
+  try {
+    const response = await fetch('reserve_data.json');
+    if(!response.ok) throw new Error('reserve_data.json unavailable');
+    state.data = await response.json();
+    state.rows = state.data.reserves[0].trajectory;
+    $('windowLabel').textContent = `${state.data.window} · ${state.data.start.slice(0,10)} to ${state.data.end.slice(0,10)}`;
+    buildPicker();
+    buildTable();
+    selectReserve(6);
+  } catch (error) {
+    $('selectionNote').textContent = 'Could not load the precomputed reserve data. Serve this folder over HTTP (see website/README.md) and try again.';
+    $('reserveChart').innerHTML = '<text x="70" y="80" fill="#53666c" font-size="15">Reserve data unavailable.</text>';
+  }
+}
+
+function buildPicker(){
+  const labels = {0:'no inventory floor',2:'light floor',4:'moderate floor',6:'study reference',8:'high floor'};
+  $('reservePicker').innerHTML = state.data.reserves.map(item => {
+    const r = Number(item.reserve_mwh);
+    return `<button class="reserve-button" type="button" data-reserve="${r}" aria-pressed="false"><span>R = ${r}</span><small>${labels[r]}</small></button>`;
+  }).join('');
+  $('reservePicker').addEventListener('click', event => {
+    const button = event.target.closest('button[data-reserve]');
+    if(button) selectReserve(Number(button.dataset.reserve));
+  });
+}
+
+function buildTable(){
+  $('reserveTable').querySelector('tbody').innerHTML = state.data.reserves.map(item => {
+    const r = Number(item.reserve_mwh);
+    return `<tr data-reserve="${r}" data-active="false">
+      <th scope="row"><button type="button" data-reserve="${r}">R = ${r}</button></th>
+      <td>${money(item.october_incremental_aud)}</td>
+      <td>${pct(item.october_capture)}</td>
+      <td>${money(item.june_incremental_aud)}</td>
+      <td>${money(item.calm_cost_vs_r0)}</td>
+      <td>${money(item.five_window_mean)}</td>
+      <td>${money(item.worst_window)}</td>
+      <td>${money1(item.soc_before_first_spike_mwh)}</td>
+      <td>${item.missed_spike_intervals}</td>
+    </tr>`;
+  }).join('');
+  $('reserveTable').addEventListener('click', event => {
+    const button = event.target.closest('button[data-reserve]');
+    if(button) selectReserve(Number(button.dataset.reserve));
+  });
+}
+
+function selectReserve(value){
+  const item = state.data.reserves.find(entry => Number(entry.reserve_mwh) === value);
+  if(!item) return;
+  state.selected = value;
+  state.rows = item.trajectory;
+  document.querySelectorAll('#reservePicker .reserve-button').forEach(button => {
+    button.setAttribute('aria-pressed', Number(button.dataset.reserve) === value ? 'true' : 'false');
+  });
+  document.querySelectorAll('#reserveTable tbody tr').forEach(row => {
+    row.dataset.active = Number(row.dataset.reserve) === value ? 'true' : 'false';
+  });
+  $('cardOct').textContent = money(item.october_incremental_aud);
+  $('cardCapture').textContent = pct(item.october_capture);
+  $('cardJune').textContent = money(item.june_incremental_aud);
+  $('cardMean').textContent = money(item.five_window_mean);
+  $('cardSoc').textContent = `${money1(item.soc_before_first_spike_mwh)} MWh`;
+  const spikeIntervals = state.rows.filter(row => Number(row.p) >= 5000).length;
+  $('cardMissed').textContent = `${item.missed_spike_intervals} of ${spikeIntervals}`;
+  $('cardCalm').textContent = `${money(item.calm_cost_vs_r0)} AUD`;
+  $('cardWorst').textContent = `${money(item.worst_window)} AUD`;
+  $('selectionNote').textContent = `Showing R = ${value} MWh: the battery holds a ${value} MWh inventory floor (${(value/20*100).toFixed(0)}% of the 20 MWh capacity). October uplift ${money(item.october_incremental_aud)} AUD; spike capture ${pct(item.october_capture)}; calm cost ${money(item.calm_cost_vs_r0)} AUD.`;
+  renderChart(item);
+}
+
+function renderChart(item){
+  const rows = item.trajectory;
+  const n = rows.length;
+  const pw = W-L-R;
+  const x = i => L + i/(n-1)*pw;
+  const yPrice = v => pTop + (symlog(pMax)-symlog(v))/(symlog(pMax)-symlog(pMin))*(pBottom-pTop);
+  const ySoc = v => sTop + (20-v)/20*(sBottom-sTop);
+  const yDis = v => dTop + (5-v)/5*(dBottom-dTop);
+  const spikeGroups = [];
+  let start = -1;
+  for(let i=0;i<n;i++){
+    const isSpike = Number(rows[i].p) >= 5000;
+    if(isSpike && start<0) start=i;
+    if(!isSpike && start>=0){ spikeGroups.push([start,i]); start=-1; }
+  }
+  if(start>=0) spikeGroups.push([start,n]);
+
+  let svg = `<title>October 2026 saved trajectory at R = ${item.reserve_mwh} MWh</title>`;
+  svg += `<rect x="0" y="0" width="${W}" height="${H}" fill="#fffdf7"/>`;
+  for(const [a,b] of spikeGroups){
+    svg += `<rect x="${x(a).toFixed(2)}" y="${pTop}" width="${Math.max(1.2,x(b)-x(a)).toFixed(2)}" height="${dBottom-pTop}" fill="#ae4937" opacity="0.07"/>`;
+  }
+
+  const priceTicks = [-10,0,100,1000,5000,20000];
+  for(const tick of priceTicks){
+    const yy = yPrice(tick);
+    svg += `<line x1="${L}" x2="${W-R}" y1="${yy.toFixed(2)}" y2="${yy.toFixed(2)}" stroke="${tick===5000?'#ae4937':'#d5d8d1'}" stroke-dasharray="${tick===5000?'4 3':'none'}" opacity="${tick===5000?0.7:1}"/>`;
+    svg += `<text x="${L-9}" y="${(yy+4).toFixed(2)}" text-anchor="end" fill="#53666c" font-size="11">${tick.toLocaleString('en-AU')}</text>`;
+  }
+  for(const tick of [0,5,10,15,20]){
+    const yy = ySoc(tick);
+    svg += `<line x1="${L}" x2="${W-R}" y1="${yy.toFixed(2)}" y2="${yy.toFixed(2)}" stroke="#d5d8d1"/>`;
+    svg += `<text x="${L-9}" y="${(yy+4).toFixed(2)}" text-anchor="end" fill="#53666c" font-size="11">${tick}</text>`;
+  }
+  for(const tick of [0,1,2,3,4,5]){
+    const yy = yDis(tick);
+    svg += `<line x1="${L}" x2="${W-R}" y1="${yy.toFixed(2)}" y2="${yy.toFixed(2)}" stroke="#d5d8d1"/>`;
+    svg += `<text x="${L-9}" y="${(yy+4).toFixed(2)}" text-anchor="end" fill="#53666c" font-size="11">${tick}</text>`;
+  }
+
+  svg += `<text x="${L}" y="18" fill="#162c36" font-size="14" font-weight="600">Energy price · AUD/MWh</text>`;
+  svg += `<text x="${W-R}" y="18" text-anchor="end" fill="#ae4937" font-size="11">dashed line = 5,000 spike threshold</text>`;
+  svg += `<text x="${L}" y="210" fill="#162c36" font-size="14" font-weight="600">Stored energy before dispatch · MWh</text>`;
+  svg += `<text x="${W-R}" y="210" text-anchor="end" fill="#226b91" font-size="11">dashed line = selected reserve</text>`;
+  svg += `<text x="${L}" y="370" fill="#162c36" font-size="14" font-weight="600">Battery discharge · MW</text>`;
+
+  const pricePoints = rows.map((row,i) => `${x(i).toFixed(2)},${yPrice(Number(row.p)).toFixed(2)}`).join(' ');
+  svg += `<polyline points="${pricePoints}" fill="none" stroke="#162c36" stroke-width="1.15" stroke-linejoin="round"/>`;
+  const socPoints = rows.map((row,i) => `${x(i).toFixed(2)},${ySoc(Number(row.e)).toFixed(2)}`).join(' ');
+  svg += `<polyline points="${socPoints}" fill="none" stroke="#226b91" stroke-width="1.7" stroke-linejoin="round"/>`;
+  const dischargePoints = rows.map((row,i) => `${x(i).toFixed(2)},${yDis(Number(row.d)).toFixed(2)}`).join(' ');
+  svg += `<polyline points="${dischargePoints}" fill="none" stroke="#b96a19" stroke-width="1.35" stroke-linejoin="round"/>`;
+
+  const reserveY = ySoc(Number(item.reserve_mwh));
+  svg += `<line x1="${L}" x2="${W-R}" y1="${reserveY.toFixed(2)}" y2="${reserveY.toFixed(2)}" stroke="#226b91" stroke-dasharray="5 4" stroke-width="1.2"/>`;
+  svg += `<text x="${W-R-4}" y="${(reserveY-6).toFixed(2)}" text-anchor="end" fill="#226b91" font-size="11">R = ${item.reserve_mwh} MWh</text>`;
+
+  for(let i=0;i<n;i+=288){
+    svg += `<line x1="${x(i).toFixed(2)}" x2="${x(i).toFixed(2)}" y1="${dBottom}" y2="${dBottom+5}" stroke="#53666c"/>`;
+    svg += `<text x="${x(i).toFixed(2)}" y="${dBottom+20}" text-anchor="middle" fill="#53666c" font-size="11">${dateLabel(rows[i].t)}</text>`;
+  }
+  svg += `<line x1="${L}" x2="${W-R}" y1="${dBottom+30}" y2="${dBottom+30}" stroke="#53666c"/>`;
+  svg += `<text x="${L}" y="${dBottom+50}" fill="#53666c" font-size="11">Intervals are five minutes; labels mark NEM midnight (UTC+10).</text>`;
+  svg += `<line id="cursorLine" x1="${L}" x2="${L}" y1="${pTop}" y2="${dBottom}" stroke="#ae4937" stroke-dasharray="4 3" opacity="0"/>`;
+  svg += `<circle id="cursorPrice" cx="${L}" cy="${yPrice(rows[0].p)}" r="3" fill="#162c36" opacity="0"/>`;
+  svg += `<circle id="cursorSoc" cx="${L}" cy="${ySoc(rows[0].e)}" r="3" fill="#226b91" opacity="0"/>`;
+  svg += `<circle id="cursorDis" cx="${L}" cy="${yDis(rows[0].d)}" r="3" fill="#b96a19" opacity="0"/>`;
+  svg += `<rect id="chartOverlay" x="${L}" y="${pTop}" width="${pw}" height="${dBottom-pTop}" fill="transparent" style="cursor:crosshair"/>`;
+  $('reserveChart').innerHTML = svg;
+  attachHover();
+}
+
+function attachHover(){
+  const svg = $('reserveChart');
+  const overlay = $('chartOverlay');
+  const tooltip = $('chartTooltip');
+  const n = state.rows.length;
+  const pw = W-L-R;
+  const x = i => L + i/(n-1)*pw;
+  const yPrice = v => pTop + (symlog(pMax)-symlog(v))/(symlog(pMax)-symlog(pMin))*(pBottom-pTop);
+  const ySoc = v => sTop + (20-v)/20*(sBottom-sTop);
+  const yDis = v => dTop + (5-v)/5*(dBottom-dTop);
+  const choose = event => {
+    const box = svg.getBoundingClientRect();
+    const px = (event.clientX-box.left)/box.width*W;
+    return Math.max(0,Math.min(n-1,Math.round((px-L)/pw*(n-1))));
+  };
+  const show = event => {
+    const index = choose(event);
+    const row = state.rows[index];
+    const line = $('cursorLine'), cp = $('cursorPrice'), cs = $('cursorSoc'), cd = $('cursorDis');
+    line.setAttribute('x1',x(index)); line.setAttribute('x2',x(index)); line.setAttribute('opacity','0.8');
+    cp.setAttribute('cx',x(index)); cp.setAttribute('cy',yPrice(Number(row.p))); cp.setAttribute('opacity','1');
+    cs.setAttribute('cx',x(index)); cs.setAttribute('cy',ySoc(Number(row.e))); cs.setAttribute('opacity','1');
+    cd.setAttribute('cx',x(index)); cd.setAttribute('cy',yDis(Number(row.d))); cd.setAttribute('opacity','1');
+    $('hoverTime').textContent = timeLabel(row.t);
+    $('hoverPrice').textContent = `${money1(row.p)} AUD/MWh`;
+    $('hoverSoc').textContent = `${money1(row.e)} MWh`;
+    $('hoverDischarge').textContent = `${money1(row.d)} MW`;
+    tooltip.innerHTML = `<strong>${timeLabel(row.t)}</strong><span>Price ${money1(row.p)} AUD/MWh</span><span>Stored ${money1(row.e)} MWh · discharge ${money1(row.d)} MW</span>`;
+    tooltip.classList.add('is-visible');
+    tooltip.setAttribute('aria-hidden','false');
+    const left = Math.min(window.innerWidth-tooltip.offsetWidth-10, Math.max(8,event.clientX+14));
+    const top = Math.min(window.innerHeight-tooltip.offsetHeight-10, Math.max(8,event.clientY+14));
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+  };
+  const hide = () => {
+    ['cursorLine','cursorPrice','cursorSoc','cursorDis'].forEach(id => $(id).setAttribute('opacity','0'));
+    tooltip.classList.remove('is-visible');
+    tooltip.setAttribute('aria-hidden','true');
+  };
+  overlay.addEventListener('pointermove', show);
+  overlay.addEventListener('pointerdown', show);
+  overlay.addEventListener('pointerleave', hide);
+  overlay.addEventListener('pointercancel', hide);
+}
+
+init();
+</script>
+</body>
+</html>

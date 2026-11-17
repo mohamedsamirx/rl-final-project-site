@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="When more freedom costs money: an interactive study of price-contingent battery reserve constraints, local shadow prices, and long-term value.">
+  <title>When More Freedom Costs Money — Battery reserve research</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%231c1c1a'/%3E%3Cpath d='M18 32h28M32 18v28' stroke='%23f7f6f3' stroke-width='5'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="v49.css">
+  <script defer src="v49.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="#top">BOUNDARY<span>/</span>BATTERY</a>
+  <nav aria-label="Main">
+    <a href="#system">System</a>
+    <a href="#boundary">Boundary</a>
+    <a href="#bids">Bid lab</a>
+    <a href="#replay">Replay</a>
+    <a href="#atlas">14 events</a>
+    <a href="#counterfactual">Counterfactual</a>
+    <a href="#inverse">Inverse</a>
+    <a href="#evidence">Evidence</a>
+    <a class="nav-cta" href="downloads/final_report.pdf">Report ↗</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero" id="top">
+    <div class="hero-copy reveal">
+      <p class="kicker">IFT6162 · Reinforcement Learning &amp; Optimal Control · Mila / Université de Montréal</p>
+      <h1>The value of<br><em>a constraint.</em></h1>
+      <p class="lede">More freedom can cost money. This project separates three questions: where a reserve constraint changes the feasible bid, where it changes the cleared action, and where the local shadow price stops predicting long-term value.</p>
+      <div class="hero-actions">
+        <a class="btn" href="#boundary">Explore the boundary</a>
+        <a class="text-link" href="downloads/final_report.pdf">Read the 16-page report ↗</a>
+      </div>
+      <p class="fine">Retrospective simulation · reused V27 panel · V49.3.2 audit · prospective December test pending</p>
+    </div>
+    <aside class="hero-panel reveal">
+      <p class="micro">Exact structural result</p>
+      <div class="hero-number">2.20<span>%</span></div>
+      <p>of total capacity is the only state-of-charge interval where the V46 release rule changes the effective reserve constraint versus <code>R = 16</code>.</p>
+      <div class="hero-rule"></div>
+      <dl>
+        <div><dt>Boundary layer</dt><dd>0.4392 MWh</dd></div>
+        <div><dt>Battery</dt><dd>20 MWh / 5 MW</dd></div>
+        <div><dt>Dispatch</dt><dd>5-minute NSW1</dd></div>
+        <div><dt>Objective</dt><dd>mean − 0.05 · CVaR</dd></div>
+      </dl>
+    </aside>
+  </section>
+
+  <section class="metrics" aria-label="Headline measurements">
+    <article class="reveal"><strong>+147.22</strong><span>AUD per event versus scalar R = 16</span><small>14 of 14 historical events</small></article>
+    <article class="reveal"><strong>90.1%</strong><span>of the total gain captured by a tuned constant R = 15.80</span><small>feedback superiority is not established</small></article>
+    <article class="reveal"><strong>−0.098</strong><span>Spearman correlation: local shadow price versus realized advantage</span><small>28 selected counterfactual interventions</small></article>
+  </section>
+
+  <section class="section" id="system">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow">01 / The control problem</p>
+        <h2>A bid is a decision made before the price is known.</h2>
+      </div>
+      <p>The controller sees trailing prices and battery inventory. It submits a price-contingent charge and discharge curve. The market then clears that curve against an unknown price. The reserve row changes what the optimizer may offer, not what the market will accept.</p>
+    </div>
+    <div class="system-grid">
+      <figure class="system-figure reveal" aria-labelledby="systemCaption">
+        <svg viewBox="0 0 900 340" role="img" aria-label="Control diagram: trailing prices and inventory enter a scenario LP, which produces price-contingent bands; market clearing uses an unknown future price; battery dynamics update inventory.">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#6e6c65"></path>
+            </marker>
+          </defs>
+          <rect x="26" y="52" width="190" height="92" rx="8" fill="#ffffff" stroke="#e6e2d9"></rect>
+          <text x="44" y="78" font-size="11" font-family="Helvetica,Arial,sans-serif" fill="#6e6c65" letter-spacing="1.2">KNOWN AT BID TIME</text>
+          <text x="44" y="104" font-size="15" font-family="Helvetica,Arial,sans-serif" fill="#1c1c1a">Trailing prices</text>
+          <text x="44" y="124" font-size="12" font-family="Helvetica,Arial,sans-serif" fill="#6e6c65">48 scenarios + tail anchors</text>
+
+          <rect x="26" y="174" width="190" height="92" rx="8" fill="#ffffff" stroke="#e6e2d9"></rect>
+          <text x="44" y="200" font-size="11" font-family="Helvetica,Arial,sans-serif" fill="#6e6c65" letter-spacing="1.2">STATE</text>
+          <text x="44" y="226" font-size="15" font-family="Helvetica,Arial,sans-serif" fill="#1c1c1a">Battery inventory</text>
+          <text x="44" y="246" font-size="12" font-family="Helvetica,Arial,sans-serif" fill="#6e6c65">Eₜ ∈ [0, 20] MWh</text>
+
+          <rect x="278" y="92" width="190" height="134" rx="8" fill="#e7f1ec" stroke="#1f6f63"></rect>
+          <text x="298" y="120" font-size="11" font-family="Helvetica,Arial,sans-serif" fill="#1f6f63" letter-spacing="1.2">DECISION</text>
+          <text x="298" y="148" font-size="16" font-family="Helvetica,Arial,sans-serif" fill="#1c1c1a">Scenario mean-CVaR LP</text>
+          <text x="298" y="170" font-size="12" font-family="Helvetica,Arial,sans-serif" fill="#4d5f5b">6 discharge + 4 charge bands</text>
+          <text x="298" y="188" font-size="12" font-family="Helvetica,Arial,sans-serif" fill="#4d5f5b">reserve row: protected inventory</text>
+          <text x="298" y="206" font-size="12" font-family="Helvetica,Arial,sans-serif" fill="#4d5f5b">power, energy, degradation</text>
+
+          <rect x="530" y="52" width="180" height="92" rx="8" fill="#ffffff" stroke="#e6e2d9"></rect>
+          <text x="548" y="78" font-size="11" font-family="Helvetica,Arial,sans-serif" fill="#6e6c65" letter-spacing="1.2">UNKNOWN</text>
+          <text x="548" y="104" font-size="15" font-family="Helvetica,Arial,sans-serif" fill="#1c1c1a">Market price</text>
+          <text x="548" y="124" font-size="12" font-family="Helvetica,Arial,sans-serif" fill="#6e6c65">realized after submission</text>
+
+          <rect x="530" y="174" width="180" height="92" rx="8" fill="#ffffff" stroke="#e6e2d9"></rect>
+          <text x="548" y="200" font-size="11" font-family="Helvetica,Arial,sans-serif" fill="#6e6c65" letter-spacing="1.2">OUTCOME</text>
+          <text x="548" y="226" font-size="15" font-family="Helvetica,Arial,sans-serif" fill="#1c1c1a">Cleared dispatch</text>
+          <text x="548" y="246" font-size="12" font-family="Helvetica,Arial,sans-serif" fill="#6e6c65">reward, SOC, terminal value</text>
+
+          <line x1="216" y1="98" x2="270" y2="126" stroke="#6e6c65" stroke-width="1.2" marker-end="url(#arrow)"></line>
+          <line x1="216" y1="220" x2="270" y2="190" stroke="#6e6c65" stroke-width="1.2" marker-end="url(#arrow)"></line>
+          <line x1="468" y1="128" x2="522" y2="100" stroke="#6e6c65" stroke-width="1.2" marker-end="url(#arrow)"></line>
+          <line x1="468" y1="190" x2="522" y2="218" stroke="#6e6c65" stroke-width="1.2" marker-end="url(#arrow)"></line>
+          <path d="M 710 220 H 790 V 30 H 121 V 46" fill="none" stroke="#b45f3c" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#arrow)"></path>
+          <text x="742" y="18" font-size="11" font-family="Helvetica,Arial,sans-serif" fill="#b45f3c" text-anchor="middle">next state</text>
+
+          <text x="26" y="316" font-size="11" font-family="Helvetica,Arial,sans-serif" fill="#6e6c65">The only reserve-dependent row is the protected-band inventory constraint. Everything else is fixed.</text>
+        </svg>
+        <figcaption class="fine" id="systemCaption">State, decision, disturbance, and dynamics. The future price is outside the controller's information set at bid time.</figcaption>
+      </figure>
+      <aside class="system-notes reveal">
+        <div class="note-block"><h3>State</h3><p>Stored energy Eₜ and the trailing market history. No future price enters the bid.</p></div>
+        <div class="note-block"><h3>Action</h3><p>Ten price-contingent bands, with a reserve row protecting inventory below AUD 5,000/MWh.</p></div>
+        <div class="note-block"><h3>Disturbance</h3><p>Actual spot price and simulated 5-minute dispatch. The market clears the submitted curve.</p></div>
+        <div class="note-block"><h3>Test</h3><p>Does changing R(E) change the bid, the cleared action, and the long-run reward? Those are separate questions.</p></div>
+      </aside>
+    </div>
+    <div class="equation-strip reveal">
+      <div><span>Dynamics</span><code>E<sub>t+1</sub> = E<sub>t</sub> + η<sub>c</sub> c<sub>t</sub> Δt − d<sub>t</sub> Δt / η<sub>d</sub></code></div>
+      <div><span>Reserve row</span><code>(Δt / η<sub>d</sub>) Σ<sub>p&lt;5000</sub> q<sub>b</sub> ≤ max(0, E<sub>t</sub> − R(E<sub>t</sub>))</code></div>
+    </div>
+  </section>
+
+  <section class="section" id="boundary">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow">02 / Constraint geometry</p>
+        <h2>Move the inventory. Watch the feasible action change.</h2>
+      </div>
+      <p>The shaded strip is the exact region where the V46 rule differs from <code>R = 16</code>. The sliders change the geometry of the admissible offer, not the market price or the bid optimizer.</p>
+    </div>
+    <div class="lab-shell">
+      <aside class="lab-controls reveal">
+        <p class="micro">Controller</p>
+        <label for="soc">Stored energy E <output id="socText">16.050 MWh</output></label>
+        <input id="soc" type="range" min="15.70" max="16.55" step="0.001" value="16.05" aria-label="Battery stored energy in megawatt-hours">
+        <label for="slope">SOC release slope k <output id="slopeText">4.00</output></label>
+        <input id="slope" type="range" min="0" max="10" step="0.25" value="4" aria-label="SOC release slope">
+        <div class="rule-note">Rule: <code>R(E) = clip(16 − k · max(E − 16, 0), 0, 20)</code>.<br>Protected bands: price below AUD 5,000/MWh. Efficiency 0.94868.</div>
+        <div class="readout-stack" aria-live="polite">
+          <div><span>Scalar R = 16</span><strong id="v16">0 MW</strong></div>
+          <div><span>Constant R = 15.80</span><strong id="v158">0 MW</strong></div>
+          <div><span>Release rule</span><strong id="vrule">0 MW</strong></div>
+        </div>
+      </aside>
+      <div class="lab-chart reveal">
+        <div class="chart-head"><h3>Maximum protected-band offer</h3><span>MW</span></div>
+        <svg id="boundaryChart" viewBox="0 0 760 380" role="img" aria-label="Maximum protected-band offer against battery energy for three reserve policies"></svg>
+        <div class="legend">
+          <span style="color:#4a6484"><i class="swatch" style="background:#4a6484"></i>Scalar R = 16</span>
+          <span style="color:#b45f3c"><i class="swatch dashed" style="background:#b45f3c"></i>Constant R = 15.80</span>
+          <span style="color:#1f6f63"><i class="swatch" style="background:#1f6f63"></i>V46 release rule</span>
+        </div>
+        <p class="chart-note">Increasing the permissible offer is not the same as increasing cleared discharge or earning money. The bid optimizer and the realized price path determine the next step.</p>
+      </div>
+    </div>
+    <figure class="atlas reveal">
+      <img src="assets/v49/research_boundary_atlas.svg" alt="Research atlas showing the exact reserve boundary and a four-stage funnel from 19,488 matched states to 28 audited counterfactuals.">
+      <figcaption>From state to value: 19,488 matched states, 1,294 differing bids, 100 differing cleared actions, and 28 audited counterfactuals. The funnel is the empirical consequence of the exact boundary layer above.</figcaption>
+    </figure>
+  </section>
+
+
+  <section class="section" id="bids">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow">03 / Bidding microscope</p>
+        <h2>See the actual optimizer, not only the allowance.</h2>
+      </div>
+      <p>Choose a saved event and inventory level. The chart shows the LP's actual discharge offers by price band for all three controllers, plus the realized price and cleared discharge.</p>
+    </div>
+    <div class="bid-shell">
+      <aside class="lab-controls reveal">
+        <p class="micro">Saved LP state</p>
+        <label for="bidEvent">Market event</label>
+        <select id="bidEvent"></select>
+        <label for="bidEnergy" class="control-label">Inventory E</label>
+        <select id="bidEnergy"></select>
+        <div class="rule-note">Each point is a precomputed LP solve at the same state and market timestamp. The browser never reruns the optimizer.</div>
+        <p class="status-line" id="bidStatus">Loading bid grid…</p>
+      </aside>
+      <div class="lab-chart reveal">
+        <div class="chart-head"><h3>Discharge offers by price band</h3><span>MW</span></div>
+        <svg id="bidChart" viewBox="0 0 760 330" role="img" aria-label="Actual discharge bid quantities by price band for three controllers"></svg>
+        <div class="legend">
+          <span style="color:#4a6484"><i class="swatch" style="background:#4a6484"></i>Scalar R = 16</span>
+          <span style="color:#b45f3c"><i class="swatch" style="background:#b45f3c"></i>Constant R = 15.80</span>
+          <span style="color:#1f6f63"><i class="swatch" style="background:#1f6f63"></i>V46 release</span>
+        </div>
+        <p class="chart-note">The vertical price line marks the realized interval price. Bands above that price may clear; the exact cleared quantity is in the readout. A larger offer is not automatically a larger cleared discharge.</p>
+      </div>
+    </div>
+    <div class="replay-readout bid-readout" id="bidReadout" aria-live="polite"></div>
+  </section>
+
+  <section class="section" id="replay">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow">04 / Saved trajectories</p>
+        <h2>Follow two controllers through the same market.</h2>
+      </div>
+      <p>These are real seven-day V27 runs, exported from the simulator. The browser switches between saved arrays; it does not rerun the LP. Select an event and a day, then scrub or play.</p>
+    </div>
+    <div class="replay-shell">
+      <aside class="replay-controls reveal">
+        <label for="eventSelect">Market event</label>
+        <select id="eventSelect"></select>
+        <label for="daySelect" class="control-label">Operating day</label>
+        <select id="daySelect"></select>
+        <div class="policy-toggles" aria-label="Policies">
+          <label><input type="checkbox" id="showScalar" checked> Scalar R = 16</label>
+          <label><input type="checkbox" id="showConstant" checked> Tuned constant R = 15.80</label>
+          <label><input type="checkbox" id="showRule" checked> V46 SOC release</label>
+        </div>
+        <button class="btn" id="playBtn" type="button">Play day</button>
+        <label class="scrub-label" for="timeSlider">Five-minute interval <output id="timeText">00:00</output></label>
+        <input id="timeSlider" type="range" min="0" max="287" value="0" step="1">
+        <p class="status-line" id="replayStatus">Loading saved trajectories…</p>
+      </aside>
+      <div class="replay-charts reveal">
+        <div class="chart-card"><h3>Market price</h3><svg id="priceChart" viewBox="0 0 760 190" role="img" aria-label="Market price over the selected day"></svg></div>
+        <div class="chart-card"><h3>Stored energy</h3><svg id="energyChart" viewBox="0 0 760 210" role="img" aria-label="Battery stored energy for the selected policies"></svg></div>
+        <div class="chart-card"><h3>Cumulative net value versus scalar</h3><svg id="diffChart" viewBox="0 0 760 210" role="img" aria-label="Cumulative revenue difference versus the scalar policy"></svg></div>
+        <div class="replay-readout" id="replayReadout" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section" id="atlas">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow">05 / The empirical atlas</p>
+        <h2>All fourteen events. Both baselines.</h2>
+      </div>
+      <p>The five selection events and nine complementary events are shown together. Switch between the coarse scalar R = 16 and the tuned constant R = 15.80; the apparent advantage changes materially.</p>
+    </div>
+    <div class="atlas-shell">
+      <aside class="lab-controls reveal">
+        <p class="micro">Comparison</p>
+        <label for="atlasCompare">Baseline</label>
+        <select id="atlasCompare">
+          <option value="scalar">V46 minus scalar R = 16</option>
+          <option value="constant">V46 minus tuned R = 15.80</option>
+        </select>
+        <label for="atlasMeasure" class="control-label">Measure</label>
+        <select id="atlasMeasure">
+          <option value="net">Net value</option>
+          <option value="operating">Operating revenue</option>
+          <option value="terminal">Terminal adjustment</option>
+          <option value="spike">Spike revenue</option>
+        </select>
+        <div class="rule-note">Selection events are filled markers; complement events are outlined. Click a row for the exact decomposition. Terminal marks are event-specific.</div>
+      </aside>
+      <div class="lab-chart reveal">
+        <div class="chart-head"><h3>Paired event gain</h3><span>AUD/event</span></div>
+        <svg id="atlasChart" viewBox="0 0 760 530" role="img" aria-label="Paired gains for all fourteen events against two scalar baselines"></svg>
+        <div class="legend">
+          <span style="color:#1f6f63">Selected five</span>
+          <span style="color:#4a6484">Complement nine</span>
+          <span style="color:#b45f3c">Negative gain</span>
+        </div>
+        <p class="chart-note">A positive bar is not a significance claim. The panel is reused; the complement was excluded from parameter selection but is not a fresh holdout.</p>
+      </div>
+    </div>
+    <div class="replay-readout atlas-readout" id="atlasReadout" aria-live="polite"></div>
+  </section>
+
+  <section class="section" id="counterfactual">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow">06 / The counterfactual fork</p>
+        <h2>Same sign of shadow price. Opposite sign of long-run value.</h2>
+      </div>
+      <p>Both interventions are in the February 2024 cluster. Both have a positive reserve-row shadow. Their future value diverges because the remaining price path changes what the stored energy is worth.</p>
+    </div>
+    <div class="fork-shell">
+      <aside class="fork-controls reveal">
+        <button class="fork-choice is-active" type="button" data-cf="t443">
+          <strong>t = 443 · −584.50 AUD</strong>
+          <span>price 300 AUD/MWh · shadow +72.09</span>
+        </button>
+        <button class="fork-choice" type="button" data-cf="t516">
+          <strong>t = 516 · +833.91 AUD</strong>
+          <span>price 3,027 AUD/MWh · shadow +172.63</span>
+        </button>
+        <div class="fork-card" id="forkCard"></div>
+        <p class="fork-note">Retrospective counterfactual. Future prices are used to measure the consequence, not to choose the intervention.</p>
+      </aside>
+      <div class="fork-charts reveal">
+        <div class="segmented" id="cfWindow" role="group" aria-label="Counterfactual horizon">
+          <button type="button" data-window="24h">First 24 h</button>
+          <button type="button" data-window="full" class="is-active">Full remaining event</button>
+        </div>
+        <div class="chart-card"><h3>Battery inventory after the fork</h3><svg id="cfEnergyChart" viewBox="0 0 760 210" role="img" aria-label="Battery inventory for the reference and intervention branches"></svg></div>
+        <div class="chart-card"><h3>Cumulative net advantage, including terminal mark</h3><svg id="cfDiffChart" viewBox="0 0 760 210" role="img" aria-label="Cumulative revenue advantage of the intervention branch"></svg></div>
+        <div class="cf-scrub">
+          <label for="cfSlider">Intervals after intervention <input id="cfSlider" type="range" min="0" max="287" value="0" step="1"></label>
+          <output id="cfTime">00:00</output>
+        </div>
+        <div class="replay-readout" id="cfReadout" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section" id="inverse">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow">07 / Inverse-optimization lab</p>
+        <h2>Does one common V implement the whole family?</h2>
+      </div>
+      <p>A single bid can satisfy KKT and still fail to be part of one inventory-dependent policy. Choose an event and slope cap; filled markers are converged fixed-weight certificates, open markers are unresolved.</p>
+    </div>
+    <div class="inverse-shell">
+      <aside class="lab-controls reveal">
+        <p class="micro">Common-V question</p>
+        <label for="invEvent">Market event</label>
+        <select id="invEvent"></select>
+        <label for="invCap" class="control-label">Maximum supergradient</label>
+        <select id="invCap"></select>
+        <div class="rule-note"><code>∃V concave, nondecreasing: qᵢ* ∈ argmax J(Eᵢ,q;V) for all i.</code><br><br>The joint test asks for one V across E = 16.05, 16.10, 16.20 MWh. It is not a per-state fit.</div>
+        <p class="status-line" id="invStatus">Loading certificates…</p>
+      </aside>
+      <div class="lab-chart reveal">
+        <div class="chart-head"><h3>Joint inverse slack by slope cap</h3><span>AUD</span></div>
+        <svg id="invChart" viewBox="0 0 760 300" role="img" aria-label="Joint inverse slack by slope cap for the selected event"></svg>
+        <div class="legend">
+          <span style="color:#1f6f63">Filled: converged certificate</span>
+          <span style="color:#b45f3c">Open: unresolved</span>
+        </div>
+        <p class="chart-note">13/18 main tests converged; 5/18 unresolved. Robust audit: 49/63 converged, 14/63 unresolved, 0 representable. This is not a universal CVaR-subgradient impossibility theorem.</p>
+      </div>
+    </div>
+    <div class="evidence-grid inverse-cards" id="inverseCards" aria-live="polite"></div>
+    <details class="cvar-details reveal">
+      <summary>Reduced-model CVaR certificate: finite enumeration versus continuous bid</summary>
+      <p>The finite 17-candidate reduced model gives <strong>18.1904761905 AUD</strong>. The continuous reduced-model value is <strong>24.7065155 AUD</strong>, bracketed to about 3×10⁻⁸ AUD. The adversarial continuous bid is <code>q = (0, 0.57, 4.43, 0, 0, 5)</code> at E = 4 MWh.</p>
+      <p>Scope: three scenarios, two energies, six bands, mean-CVaR with β = 0.5 and α = 0.2. This is not a full-market certificate. The old 315.09 witness is withdrawn.</p>
+    </details>
+  </section>
+
+
+  <section class="section" id="ledger">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow">08 / Research ledger</p>
+        <h2>What we tried, what survived, what changed.</h2>
+      </div>
+      <p>Each row is a research family, not a version number. Expand for the method, strongest baseline, outcome and correction.</p>
+    </div>
+    <div class="ledger reveal">
+      <details>
+        <summary><span>01</span>Can learning improve battery decisions?</summary>
+        <p>Learned critics, decision-focused forecasting and MPC were tested against tuned scalar baselines. Performance was highly evaluation-dependent; the learned critic was not promoted, and the SPO+ selector matched the point-MPC alias.</p>
+      </details>
+      <details>
+        <summary><span>02</span>Can price-contingent bids be represented through V alone?</summary>
+        <p>V33–V42 inverse experiments showed that structural constraints can enlarge the implementable policy class. The reduced three-state, discharge-only model is nonrepresentable, with slacks 17.577 / 10.223 / 6.558 AUD.</p>
+      </details>
+      <details>
+        <summary><span>03</span>How can missing constraints be synthesized?</summary>
+        <p>V42 minimal capped-polytope tests showed that specific target bids can be rationalized under synthesized caps, but the result is model- and target-specific. It motivated the later reserve-boundary study rather than a universal controller.</p>
+      </details>
+      <details>
+        <summary><span>04</span>Does a better reserve rule improve revenue?</summary>
+        <p>V46 found +147.22 AUD/event over coarse R = 16 on 14 reused events. V47 then showed that tuned R = 15.80 captures 90.1% of the total gain. The original 14/14 result is real but not evidence of adaptive superiority.</p>
+      </details>
+      <details>
+        <summary><span>05</span>Where does the extra flexibility actually matter?</summary>
+        <p>V47–V49 matched-state analysis found that all 1,294 bid differences lie in 16 &lt; E &lt; 16.439207 MWh. Only 100 of 19,488 matched states change the cleared action; 28 are audited counterfactuals.</p>
+      </details>
+      <details>
+        <summary><span>06</span>Does local optimization predict future value?</summary>
+        <p>No. The reserve shadow is positive at all 28 audited states, but realized advantage ranges from −584.50 to +833.91 AUD and the Spearman correlation is −0.098. The shadow is a local LP signal, not a sequential value.</p>
+      </details>
+      <details>
+        <summary><span>07</span>Can the richer model represent entire policies?</summary>
+        <p>V49.3.2 repaired the supporting-hyperplane reconstruction and CVaR membership test. Single-state full certificates forward-verify with regret below 3×10⁻⁸ AUD. The joint test has no representable case: 13/18 converged, 5/18 unresolved; 49/63 robust converged, 14/63 unresolved.</p>
+      </details>
+    </div>
+  </section>
+
+  <section class="section" id="evidence">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow">09 / Evidence and limits</p>
+        <h2>What survives, and what the experiment does not prove.</h2>
+      </div>
+      <p>The economic comparison uses a reused 14-event validation panel. The complement was excluded from parameter selection but is not a fresh holdout. No FWER claim is made.</p>
+    </div>
+    <div class="evidence-grid">
+      <article class="evidence-card reveal">
+        <span class="tag teal">Single state</span>
+        <h3>Representable</h3>
+        <p>After repairing the supporting-hyperplane reconstruction, the full 10-band CVaR/charging inverse certificate reproduces the target bid with less than 3×10⁻⁸ AUD objective regret.</p>
+      </article>
+      <article class="evidence-card reveal">
+        <span class="tag rust">Joint three-state</span>
+        <h3>No representable case</h3>
+        <p>13 of 18 tested configurations are converged fixed-weight certificates; 5 are unconverged. The robust audit gives 49 of 63 converged, 14 unconverged, and zero representable. All report positive tested slack.</p>
+      </article>
+      <article class="evidence-card reveal">
+        <span class="tag slate">Reduced model</span>
+        <h3>Nonrepresentable</h3>
+        <p>The reduced three-state, discharge-only, risk-neutral inverse slacks are 17.58, 10.22, and 6.56 AUD. A common concave continuation value does not rationalize the family.</p>
+      </article>
+    </div>
+
+    <div class="funnel reveal" aria-label="Decision funnel">
+      <div><strong>19,488</strong><span>matched states</span></div>
+      <div><strong>1,294</strong><span>bids differ</span></div>
+      <div><strong>100</strong><span>cleared actions differ</span></div>
+      <div><strong>28</strong><span>counterfactuals audited</span></div>
+    </div>
+
+    <div class="learning-table reveal" aria-label="What learning contributed">
+      <div class="learning-row"><h3>Learned critics</h3><p>Used as continuation-value approximations in the bid LP. They did not establish a robust improvement over the best hand-designed baseline.</p><span>No promotion</span></div>
+      <div class="learning-row"><h3>Decision-focused learning</h3><p>The SPO+ selector chose an initialization that equaled the point-MPC alias. It is disclosed as an alias, not an independent success.</p><span>Alias</span></div>
+      <div class="learning-row"><h3>Cross-entropy search</h3><p>Useful for exploring reserve shapes, but the fine-constant challenge showed that most of the apparent feedback gain is a lower reserve level.</p><span>Repositioned</span></div>
+    </div>
+
+    <div style="margin-top:34px" class="reveal">
+      <details>
+        <summary>Why local shadow price is not a long-term value</summary>
+        <p>The reserve-row dual measures the marginal value of relaxing the constraint at the current LP. It does not include the future price path, the option value of stored energy, or later clearing opportunities. In 28 selected states the shadow is positive everywhere, while realized advantage ranges from −584.50 to +833.91 AUD and the Spearman rank correlation is −0.098.</p>
+      </details>
+      <details>
+        <summary>What is the exact effective-constraint result?</summary>
+        <p>The physical power row bounds protected-band discharge by δ = P<sub>max</sub>Δt / η<sub>d</sub> = 0.4392067575 MWh. Define a<sub>R</sub>(E) = min{δ, max(0, E − R(E))}. If two reserve curves have the same a<sub>R</sub>, they impose the same effective constraint. V46 differs from R = 16 only on 16 &lt; E &lt; 16.439207.</p>
+      </details>
+      <details>
+        <summary>What does “no representable case” mean here?</summary>
+        <p>It means no tested fixed-weight inverse problem found one common concave V that rationalizes the three target bids in the full 10-band CVaR/charging model. It is not a universal theorem over every CVaR subgradient: the unconverged runs and the unexhausted subgradient space are reported explicitly.</p>
+      </details>
+      <details>
+        <summary>What is the prospective status?</summary>
+        <p>The December 2026 prospective branch is frozen and excluded from the reported evidence. V48 is provenance only and is not pursued. No new reserve sweep is justified.</p>
+      </details>
+    </div>
+
+    <div class="downloads reveal" aria-label="Downloads">
+      <a class="download" href="downloads/final_report.pdf">Final report PDF ↗</a>
+      <a class="download" href="downloads/presentation.pdf">Slides PDF ↗</a>
+      <a class="download" href="downloads/solar-storage-poster.pdf">A1 poster PDF ↗</a>
+      <a class="download" href="downloads/comparison.csv">Results CSV ↓</a>
+      <a class="download" href="downloads/verification.json">Audit JSON ↗</a>
+      <a class="download" href="data/provenance.json">SHA256 provenance ↗</a>
+      <a class="download" href="archive.html">Earlier research archive ↗</a>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div>BOUNDARY / BATTERY · IFT6162 final project · Mohamed Samir · November 2026</div>
+  <div><a href="downloads/final_report.pdf">Report</a> · <a href="https://github.com/mohamedsamirx/RL_Final_Project">Repository</a> · <a href="archive.html">Archive</a></div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "status": "passed",
+  "actual_controller_runs": 24,
+  "actual_controller_intervals": 72576,
+  "logical_cells": 56,
+  "matched_pairs": 28,
+  "unique_raw_archives_hashed": 8,
+  "original_solver_records": 54432,
+  "relative_gap_flags_with_original_bounds": 0,
+  "mature_error_access_records": 18144,
+  "selection_recomputed": false,
+  "spo_checkpoint": "init",
+  "gradient_updates": 0,
+  "activation_historical": false,
+  "capacity_assumed_enabled": true,
+  "scope": "Locked dates; unchanged inputs/selectors; physical and financial accounting; original solver certificates; chronology; equivalence mapping. Not actual acceptance, registration, historical activation or significance."
+}

@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Reserve–learning substitution and dual-calibrated battery inventory shielding: derivation, proof, KKT interpretation, full-LP duals and the V25.3 severe-validation retest.">
+<title>Theory — reserve–learning substitution</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23162c36'/%3E%3Ccircle cx='32' cy='32' r='15' fill='none' stroke='%23b96a19' stroke-width='5'/%3E%3Cpath d='M32 12v8M32 44v8M12 32h8M44 32h8' stroke='%23f7f5ee' stroke-width='4'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<style>
+  .theory-hero{padding-top:58px}
+  .theory-hero h1{font-size:clamp(40px,6vw,82px);letter-spacing:-4px}
+  .theory-hero .intro{max-width:1120px}
+  .theory-hero .intro p{font-size:17px}
+  .eq{background:#eef1eb;border-left:3px solid var(--gold);padding:14px 17px;margin:16px 0;font:600 17px/1.7 'Manrope',sans-serif;overflow-x:auto}
+  .theorem{background:#fffdf7;border:1px solid var(--line);border-left:4px solid var(--green);padding:18px 20px;margin:22px 0}
+  .theorem h3{margin:0 0 8px}
+  .proof{background:#fffdf7;border:1px solid var(--line);padding:18px 20px;margin:22px 0}
+  .proof h3{margin:0 0 8px}
+  .proof ol{margin:10px 0 0;padding-left:22px}
+  .proof li{margin:9px 0;color:var(--muted)}
+  .proof li strong{color:var(--ink)}
+  .figure{margin:24px 0 8px;background:#fffdf7;border:1px solid var(--line);padding:12px}
+  .figure img{display:block;width:100%;height:auto}
+  .figure figcaption{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
+  .theory-table{width:100%;border-collapse:collapse;font-size:14px;margin:18px 0;background:#fffdf7}
+  .theory-table th,.theory-table td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left}
+  .theory-table th{font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
+  .theory-table td:not(:first-child){text-align:right}
+  .two-up{display:grid;grid-template-columns:1.1fr 1fr;gap:30px;align-items:start}
+  .callout{background:#fffdf7;border-left:3px solid var(--gold);padding:16px 18px;margin:20px 0}
+  .callout h3{margin:0 0 8px}
+  .callout p{margin:0;color:var(--muted)}
+  @media(max-width:900px){.two-up{grid-template-columns:1fr}.theory-table{font-size:12px}}
+</style>
+</head>
+<body>
+<header>
+  <a class="wordmark" href="index.html">SOLAR <span>×</span> STORAGE</a>
+  <nav aria-label="Main">
+    <a href="index.html#results">Results</a>
+    <a href="index.html#replay">Dispatch lab</a>
+    <a href="reserve_selector.html">Reserve selector</a>
+    <a href="dynamics.html">Dynamics</a>
+    <a href="theory.html" aria-current="page">Theory</a>
+    <a href="index.html#protocol">Evidence</a>
+    <a href="downloads/solar-storage-poster.pdf">Poster ↗</a>
+  </nav>
+</header>
+<main>
+<section class="hero theory-hero">
+  <p class="eyebrow">V25–V25.3 · Theory</p>
+  <h1>Protection can substitute<br><em>for learning.</em></h1>
+  <div class="intro">
+    <p>The empirical result is simple: once a hard inventory floor binds, the learned inventory value stops setting ordinary discharge. This page derives that statement, identifies the shadow price of protection, and shows when the learned value still matters.</p>
+    <p>The proof is a one-step concave-KKT argument. The full scenario LP is a risk-weighted implementation of the same multiplier mechanism; the proof page states the extension and its limits.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">01 / One-step model</p>
+  <h2>Discharge, floor,<br>continuation value.</h2>
+  <p>Energy <i>E</i> MWh, price <i>p</i> AUD/MWh, wear <i>w</i> AUD/MWh, discharge efficiency <i>η<sub>d</sub></i>, interval <i>Δt</i>. The controller chooses discharge <i>d</i> ≥ 0 MW.</p>
+  <div class="eq">E′ = E − d Δt / η<sub>d</sub></div>
+  <div class="eq">J(d) = (p − w) d Δt + V(E′), &nbsp; λ(E′) = V′(E′)</div>
+  <p>The shield is a floor on stored energy: <i>d</i> ≤ <i>d<sub>R</sub></i> = (<i>E</i> − <i>R</i>)<i>η<sub>d</sub></i> / <i>Δt</i>. Define market marginal revenue per MWh of stored energy:</p>
+  <div class="eq">A = η<sub>d</sub>(p − w)</div>
+</section>
+
+<section>
+  <p class="eyebrow">02 / Unconstrained and shielded optima</p>
+  <h2>The learned value<br>sets the interior action.</h2>
+  <p>Differentiating the objective gives</p>
+  <div class="eq">J′(d) = Δt [ (p − w) − λ(E′) / η<sub>d</sub> ]</div>
+  <p>For <i>p</i> &gt; <i>w</i>, the unconstrained interior action <i>d</i>* satisfies</p>
+  <div class="eq">λ(E − d*Δt / η<sub>d</sub>) = A</div>
+  <p>The shielded action is simply</p>
+  <div class="eq">d<sub>R</sub> = min { d*, (E − R)η<sub>d</sub> / Δt }</div>
+  <p>If <i>d</i>* is below the floor, the shield is <strong>slack</strong> and the learned value sets <i>d</i>. If <i>d</i>* is above the floor, the shield is <strong>binding</strong> and <i>d<sub>R</sub></i> is fixed by <i>R</i>.</p>
+</section>
+
+<section>
+  <p class="eyebrow">03 / Shadow price</p>
+  <div class="theorem">
+    <h3>Reserve–learning substitution theorem</h3>
+    <p>In the binding regime <i>d</i>* &gt; (<i>E</i> − <i>R</i>)<i>η<sub>d</sub></i>/<i>Δt</i>, the shadow price of protection is</p>
+    <div class="eq">π<sub>R</sub> = −∂J<sub>R</sub>/∂R = max{0, A − λ(R)}</div>
+    <p>The LP multiplier for the shield row is <i>μ<sub>R</sub></i> = (<i>Δt</i>/<i>η<sub>d</sub></i>)(<i>A</i> − <i>λ</i>(<i>R</i>))<sub>+</sub>. The protected value decomposes as</p>
+    <div class="eq">J<sub>R</sub>(V) = J<sub>0</sub>(V) − ∫<sub>0</sub><sup>R</sup> (A − λ(r))<sub>+</sub> dr</div>
+    <p>where <i>J</i><sub>0</sub> is the unconstrained value at <i>R</i> = 0.</p>
+  </div>
+  <div class="proof">
+    <h3>Proof sketch</h3>
+    <ol>
+      <li><strong>Slack case.</strong> If <i>d</i>* ≤ (<i>E</i>−<i>R</i>)<i>η<sub>d</sub></i>/<i>Δt</i>, increasing <i>R</i> locally does not change <i>d</i>*, so ∂<i>J<sub>R</sub></i>/∂R = 0 and π<sub>R</sub> = 0.</li>
+      <li><strong>Binding case.</strong> If the floor binds, <i>d<sub>R</sub></i> = (<i>E</i>−<i>R</i>)<i>η<sub>d</sub></i>/<i>Δt</i> and <i>E</i>′ = <i>R</i>. Therefore <i>J<sub>R</sub></i> = (<i>p</i>−<i>w</i>)(<i>E</i>−<i>R</i>)<i>η<sub>d</sub></i> + <i>V</i>(<i>R</i>), and ∂<i>J<sub>R</sub></i>/∂R = λ(<i>R</i>) − <i>A</i>.</li>
+      <li><strong>Positive part.</strong> Since the shield binds only when the unconstrained action wants at least as much discharge, <i>A</i> ≥ λ(<i>R</i>), with equality only at the degenerate boundary. Hence π<sub>R</sub> = (<i>A</i> − λ(<i>R</i>))<sub>+</sub>.</li>
+      <li><strong>Integral.</strong> Integrate ∂<i>J<sub>R</sub></i>/∂R = −π<sub>R</sub> from 0 to <i>R</i>: <i>J<sub>R</sub></i> = <i>J</i><sub>0</sub> − ∫<sub>0</sub><sup>R</sup> π<sub>r</sub> dr.</li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">04 / KKT interpretation</p>
+  <h2>When the floor binds,<br>the action is not learned.</h2>
+  <p>The shield row is <i>g</i>(<i>d</i>) = <i>d</i> − <i>d<sub>R</sub></i> ≤ 0 with multiplier <i>μ<sub>R</sub></i> ≥ 0. KKT gives</p>
+  <div class="eq">μ<sub>R</sub> ≥ 0, &nbsp; d<sub>R</sub> ≤ (E−R)η<sub>d</sub>/Δt, &nbsp; μ<sub>R</sub>(d<sub>R</sub> − (E−R)η<sub>d</sub>/Δt) = 0</div>
+  <p>If <i>μ<sub>R</sub></i> = 0, the shield is slack and λ(<i>R</i>) determines the action. If <i>μ<sub>R</sub></i> &gt; 0, the shield binds, the action is the floor, and the multiplier is the price of relaxing it.</p>
+  <div class="callout">
+    <h3>Corollary: value gap at the floor</h3>
+    <p>If the shield binds for two continuation values <i>V<sub>L</sub></i> and <i>V<sub>H</sub></i>, then <i>d<sub>R</sub></i> is identical and <i>J<sub>R</sub></i>(<i>V<sub>L</sub></i>) − <i>J<sub>R</sub></i>(<i>V<sub>H</sub></i>) = <i>V<sub>L</sub></i>(<i>R</i>) − <i>V<sub>H</sub></i>(<i>R</i>). The learned value only matters through its value at the protected inventory level.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">05 / Empirical illustration</p>
+  <h2>The stress shield binds.<br>The calm shield does not.</h2>
+  <figure class="figure">
+    <img src="assets/v24_substitution/fig_substitution.png" alt="Learned marginal value and reserve shadow price for five market contexts.">
+    <figcaption>Left: learned marginal value λ(E), dashed market opportunity A, and the R=6 floor. Right: the reserve shadow price π(R)=(A−λ(R))₊. Oct and Jun are strongly binding; Dec and Jul are slack; Nov is nearly binding.</figcaption>
+  </figure>
+  <table class="theory-table">
+    <thead><tr><th>Context</th><th>Lagged price</th><th>A</th><th>λ(6)</th><th>π<sub>6</sub></th><th>Regime</th></tr></thead>
+    <tbody>
+      <tr><td>Oct 2026, 1 h before spike</td><td>299.81</td><td>274.9</td><td>106.3</td><td>168.6</td><td>binding</td></tr>
+      <tr><td>Jun 2025, 1 h before spike</td><td>299.99</td><td>275.1</td><td>91.3</td><td>183.8</td><td>binding</td></tr>
+      <tr><td>Nov 2026, latest window</td><td>99.02</td><td>84.5</td><td>80.8</td><td>3.7</td><td>nearly binding</td></tr>
+      <tr><td>Dec 2025, calm midday</td><td>35.46</td><td>24.2</td><td>82.1</td><td>0.0</td><td>slack</td></tr>
+      <tr><td>Jul 2025, negative trough</td><td>−20.37</td><td>−28.8</td><td>83.2</td><td>0.0</td><td>slack</td></tr>
+    </tbody>
+  </table>
+  <div class="callout">
+    <h3>These are one-step illustrative estimates</h3>
+    <p>The table uses lagged prices and a critic slice at R = 6. It is not the dual of the full scenario LP. V25 extracts the actual reserve-row duals from HiGHS and reports them separately.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">06 / Full-LP duals</p>
+  <h2>The one-step number<br>is not the LP dual.</h2>
+  <p>The six-band scenario LP adds a reserve row for each threshold. For row k, HiGHS returns the derivative of the minimized cost with respect to the row's right-hand side. The economic shadow price of protection is</p>
+  <div class="eq">π<sub>k</sub> = −ineqlin.marginals[k] ≥ 0 &nbsp; (AUD/MWh of stored energy)</div>
+  <p>The normalized discharge multiplier is μ<sub>k</sub> = (Δt/η<sub>d</sub>)π<sub>k</sub> in AUD/MW. In a single-scenario LP with a linear continuation value, this reduces exactly to π = (A − λ)<sub>+</sub>.</p>
+  <div class="theorem">
+    <h3>Power-limited corollary</h3>
+    <p>With battery power limit q̄<sub>d</sub>, the one-step diagnostic is</p>
+    <div class="eq">π<sub>R</sub> = (A − λ(R))<sub>+</sub> · 1[(E − R)η<sub>d</sub>/Δt &lt; q̄<sub>d</sub>]</div>
+    <p>For a 5 MW battery and five-minute intervals, (E − R) must be below about 0.439 MWh for a 6 MWh reserve to bind. At high state of charge the power limit binds first and the reserve row is slack.</p>
+  </div>
+  <p>The full-LP dual is a local, risk-weighted sensitivity. With mean–CVaR, the effective scenario weights are nonnegative and sum to 1 + β; the scenario net gaps can be signed. The shared reserve row does not generally reduce to a scalar probability-weighted sum. V25 reports every row's dual, slack, tight flag and binding flag, and uses the maximum-dual row for the one-step comparison.</p>
+  <table class="theory-table">
+    <thead><tr><th>Controller</th><th>Positive dual</th><th>Power-limited</th><th>Raw one-step corr.</th><th>Scenario one-step corr.</th></tr></thead>
+    <tbody>
+      <tr><td>Tuned scalar R=16</td><td>34.3%</td><td>65.7%</td><td>0.108</td><td>0.933</td></tr>
+      <tr><td>V25 continuous ladder</td><td>12.6%</td><td>87.4%</td><td>0.094</td><td>0.811</td></tr>
+      <tr><td>V25 discrete ladder</td><td>4.5%</td><td>92.6%</td><td>0.099</td><td>0.658</td></tr>
+      <tr><td>Fresh critic + shield</td><td>17.3%</td><td>79.7%</td><td>0.090</td><td>0.701</td></tr>
+    </tbody>
+  </table>
+  <p>The current-price one-step formula is a poor proxy for the actual LP dual. The scenario-average diagnostic is much better because the reserve row is shared across the scenario set. The finite-difference check matches the HiGHS dual to a mean relative error of 8.3 × 10<sup>−12</sup>.</p>
+  <p>The ladder is a nested <strong>band-conditional</strong> guarantee, not a physical state floor. The January 2026 timeline shows the maximum-dual floor near 2.7 MWh while the battery falls to about 0.5 MWh during a spike above 15,000 AUD/MWh: the 15,000 band can still clear and consume the reserve. Above the highest threshold no additional total floor is guaranteed.</p>
+  <div class="callout">
+    <h3>The strict chronological test is a negative result for V24 dominance</h3>
+    <p>The clean V25 continuous and discrete ladders are slightly worse than the tuned scalar on event mean and trade severe-stress revenue for calm-period revenue. The prior V24 curve remains the best event-mean controller, but V24 selected it on a validation set that included January 2026, a V25 test stress window. Its advantage is consistent with validation leakage, not demonstrated forward-time generalization. The correct conclusion is a stress/calm frontier, not a single winner.</p>
+  </div>
+  <figure class="figure">
+    <img src="assets/v25_chronological/fig_v25_dual_box.png" alt="Full-LP reserve-row duals for the scalar, discrete, continuous and learned-critic shields.">
+    <figcaption>Full-LP reserve-row duals on the post-cutoff panel. The V25 report also compares these duals with the one-step diagnostic, checks a finite difference of LP profit, and separates intervals where the battery is already below its floor.</figcaption>
+  </figure>
+  <p><a href="https://github.com/mohamedsamirx/RL_Final_Project/blob/main/docs/v25_full_lp_duals.md">Full V25 dual derivation and power-limit corollary</a> · <a href="https://github.com/mohamedsamirx/RL_Final_Project/blob/main/reports/v25_chronological/README.md">V25 chronological report</a></p>
+</section>
+
+<section>
+  <p class="eyebrow">07 / Dual-calibrated shield</p>
+  <h2>Price the floor.<br>Don't double-count the critic.</h2>
+  <p>V25.3 adds a dual-calibrated price-contingent shield. At each calibration time it solves the scenario LP, reads the reserve-row dual π<sub>k</sub>, and compares it with the ensemble risk premium:</p>
+  <div class="eq">g<sub>k</sub> = κσ<sub>k</sub> − π<sub>k</sub> − γ(R<sub>k</sub> − R<sup>0</sup><sub>k</sub>)</div>
+  <p>The reserve moves in the direction of the gap, is projected onto the monotone ladder, is gated to binding and above-floor rows, and is frozen against relaxation during a spike. The full-LP dual already contains the critic mean, so comparing it with λ + κσ would double-count λ; the full method uses the risk premium only, while the price-only ablation compares λ + κσ with the market opportunity.</p>
+  <div class="theorem">
+    <h3>Fixed point is a calibration condition</h3>
+    <p>At an interior fixed point, π<sub>k</sub> = κσ<sub>k</sub> (full-LP accounting) or λ<sub>k</sub> + κσ<sub>k</sub> = A<sub>k</sub> (price accounting). This is a value-matching condition, not a global optimality theorem. It says the marginal cost of protection equals the risk-adjusted marginal value of protected inventory.</p>
+  </div>
+  <p>The band-conditional inventory guarantee is preserved by the monotone projection. The ensemble σ is seed dispersion, not a calibrated probability. The update is a tracking calibration, not a convergent optimal-control algorithm.</p>
+  <p>The shield-validation block makes the identification problem concrete. The full hourly rule ties the static shield on the selection score (13,831 vs 13,831 AUD) while improving the worst event by 194 AUD at a 48 AUD mean cost; the price-opportunity arm is the only one that improves both mean and minimum. The 24-hour arm is a no-op: every daily configuration reproduces the static score exactly because no reserve row is power-unconstrained at the daily sampling times. That is the theory's prediction, not a tuning accident.</p>
+  <p>On the frozen 14-window panel the hand ladder earns <strong>+1,567 AUD per event</strong> over the tuned scalar (exact p = 0.008; event bootstrap CI [591, 2,629]; 18-controller Holm p = 0.133). The ten-critic ensemble loses 1,637 AUD per event to it, with the loss concentrated in January 2026 and October 2026 stress. The DC rule changed the ladder on only <strong>25 of 2,304</strong> scheduled recalibrations (1.09%) and is 49 AUD per event worse than the static shield (p = 0.047). The static hand-designed shield, not the dual feedback, carries the result.</p>
+  <figure class="figure">
+    <img src="assets/v25_3/fig_v25_3_frontier.png" alt="V25.3 event mean versus worst event and stress versus calm revenue.">
+    <figcaption>V25.3 out-of-sample frontier. The hand continuous ladder (green) sits on the high-mean side with the exposed prior V24 curve (gold); the DC variants (purple) cluster tightly around the static shield (orange); the learned ensemble (red) is high-calm and low-stress.</figcaption>
+  </figure>
+  <figure class="figure">
+    <img src="assets/v25_3/fig_v25_3_dc_timeline.png" alt="V25.3 DC-PCIS update timeline for the December 2025 stress window.">
+    <figcaption>The DC-PCIS timeline on the December 2025 stress window: price, stored energy, the dynamic reserve ladder, and the effective update marks. Only five of 168 hourly recalibrations actually moved the ladder, and the ladder stays within about 0.3 MWh of the validated baseline.</figcaption>
+  </figure>
+  <p><a href="https://github.com/mohamedsamirx/RL_Final_Project/blob/main/docs/v25_3_dc_pcis.md">Full DC-PCIS derivation and scope</a> · <a href="https://github.com/mohamedsamirx/RL_Final_Project/blob/main/reports/v25_3/README.md">V25.3 report</a></p>
+</section>
+
+<section>
+  <p class="eyebrow">08 / Scope</p>
+  <h2>What the theorem<br>does and does not say.</h2>
+  <div class="two-up">
+    <div>
+      <h3>It does</h3>
+      <p>Explain why a binding shield makes ordinary discharge independent of the learned value; identify the exact shadow price of protection; decompose protected value into unconstrained value minus protection cost; and bound the shielded value gap at the floor.</p>
+      <h3>It does not</h3>
+      <p>Prove that the empirical learning premium is monotone in <i>R</i> for every value function. That needs additional ordering assumptions. It also does not claim the learned value is useless when the shield is slack, or that the scenario-LP/CVaR implementation reduces to the scalar formula.</p>
+    </div>
+    <div class="callout">
+      <h3>Full proof and citations</h3>
+      <p><a href="https://github.com/mohamedsamirx/RL_Final_Project/blob/main/docs/v24_substitution_theorem.md">Full derivation and proof</a><br>
+      <a href="https://github.com/mohamedsamirx/RL_Final_Project/blob/main/reports/v24_substitution/README.md">V24 theory report</a><br>
+      <a href="https://github.com/mohamedsamirx/RL_Final_Project/blob/main/docs/v22_literature.md">Literature boundary</a></p>
+    </div>
+  </div>
+</section>
+</main>
+<footer><span>SOLAR × STORAGE / IFT6162</span><span>V25 theory · reserve–learning substitution and full-LP duals</span></footer>
+</body></html>
