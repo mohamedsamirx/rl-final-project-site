@@ -162,7 +162,7 @@
         <select id="learnWindow"></select>
         <label for="learnSeed" class="control-label">Learned seed</label>
         <select id="learnSeed"></select>
-        <div class="rule-note">Hand value and learned critic both use the same battery, reserve row and realized price path. Each line is a saved closed-loop trajectory.</div>
+        <div class="rule-note">Hand value and learned critic use the same battery, reserve row and realized price path. Each line is a saved closed-loop trajectory. The interval describes variation across five critic-training seeds on this fixed historical window; it is not a cross-period generalization interval.</div>
         <p class="status-line" id="learnStatus">Loading V21 trajectories…</p>
       </aside>
       <div class="learning-charts">

@@ -931,7 +931,7 @@
       ["Window", win.label],
       ["Seed", learning.seed],
       ["Paired mean", `${win.paired.mean_aud >= 0 ? "+" : ""}${fmt(win.paired.mean_aud, 1)} AUD`],
-      ["95% CI", `[${fmt(win.paired.ci95_low, 0)}, ${fmt(win.paired.ci95_high, 0)}]`],
+      ["95% CI · five critic seeds (fixed window)", `[${fmt(win.paired.ci95_low, 0)}, ${fmt(win.paired.ci95_high, 0)}]`],
       ["Final Δ net", `${finalDiff >= 0 ? "+" : ""}${fmt(finalDiff, 1)} AUD`],
       ["Hand incremental", `${fmt(hand.incremental_battery_aud, 1)} AUD`],
       ["Learned incremental", `${fmt(learned.incremental_battery_aud, 1)} AUD`],
