@@ -155,6 +155,23 @@
         <p>The SPO+ selector equals the point-MPC alias, not an independent success. CEM reserve search is dominated by the tuned-constant challenge: R = 15.80 captures 90.1% of V46's total gain.</p>
       </article>
     </div>
+    <div class="learning-lab reveal">
+      <aside class="lab-controls">
+        <p class="micro">Same reserve · R = 6</p>
+        <label for="learnWindow">Window</label>
+        <select id="learnWindow"></select>
+        <label for="learnSeed" class="control-label">Learned seed</label>
+        <select id="learnSeed"></select>
+        <div class="rule-note">Hand value and learned critic both use the same battery, reserve row and realized price path. Each line is a saved closed-loop trajectory.</div>
+        <p class="status-line" id="learnStatus">Loading V21 trajectories…</p>
+      </aside>
+      <div class="learning-charts">
+        <div class="chart-card"><h3>Battery inventory</h3><svg id="learnEnergyChart" viewBox="0 0 760 200" role="img" aria-label="Hand-value and learned-critic battery inventory trajectories"></svg></div>
+        <div class="chart-card"><h3>Cumulative net value difference</h3><svg id="learnDiffChart" viewBox="0 0 760 200" role="img" aria-label="Cumulative net value difference between learned critic and hand value"></svg></div>
+        <div class="replay-readout" id="learnReadout" aria-live="polite"></div>
+      </div>
+    </div>
+
     <details class="learning-details reveal">
       <summary>What does this mean for the oral defense?</summary>
       <p>The final V46 reserve rule is hand-designed. The project does not claim a learned controller that beats the tuned constant. The learning experiments are evidence about evaluation design, regime dependence and the difficulty of turning a local value estimate into a reliable policy improvement.</p>

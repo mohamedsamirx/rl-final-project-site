@@ -232,6 +232,14 @@ main { overflow: hidden; }
   letter-spacing: .08em;
   color: var(--teal);
 }
+.learning-lab {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  margin-top: 18px;
+}
+.learning-charts { display: grid; gap: 14px; min-width: 0; }
 .learning-details { margin-top: 18px; }
 .artifact-details {
   margin-top: 18px;
@@ -247,6 +255,7 @@ main { overflow: hidden; }
 .artifact-details .downloads { margin: 0 0 18px; }
 
 .section { padding: 112px 0 0; }
+section[id] { scroll-margin-top: 86px; }
 .section-head {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(260px, .75fr);
@@ -627,7 +636,7 @@ body.reveal-ready .reveal.is-visible { opacity: 1; transform: none; }
   .hero-panel { max-width: 520px; }
   .section-head { grid-template-columns: 1fr; gap: 18px; }
   .system-grid, .lab-shell, .replay-shell, .fork-shell,
-  .bid-shell, .atlas-shell, .inverse-shell { grid-template-columns: 1fr; }
+  .bid-shell, .atlas-shell, .inverse-shell, .learning-lab { grid-template-columns: 1fr; }
   .lab-controls, .replay-controls, .fork-controls { order: 1; }
   .lab-chart, .replay-charts, .fork-charts { order: 2; }
   .replay-readout { grid-template-columns: repeat(2, 1fr); }

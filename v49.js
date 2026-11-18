@@ -871,6 +871,108 @@
     renderInverse();
   }
 
+  // V21 learning trajectories -------------------------------------------
+  const learning = { data: null, window: null, seed: "42" };
+
+  function renderLearning() {
+    const win = learning.data.windows[learning.window];
+    if (!win) return;
+    const hand = win.hand;
+    const learned = win.learned[learning.seed];
+    if (!learned) return;
+    const n = win.times.length;
+    const labels = [0, 2, 4, 6].map((day) => `D${day + 1}`);
+    $("learnStatus").textContent = `${win.label} · seed ${learning.seed} · R = 6 · paired mean ${win.paired.mean_aud >= 0 ? "+" : ""}${fmt(win.paired.mean_aud, 1)} AUD`;
+
+    {
+      const svg = $("learnEnergyChart");
+      const { box } = chartBox(svg, {
+        yMin: 0, yMax: 20, h: 160, ticks: 4, labels,
+        format: (v) => `${v.toFixed(0)}`,
+      });
+      const sx = (i) => box.x0 + (box.w * i) / Math.max(1, n - 1);
+      const sy = (v) => box.y0 + box.h * (1 - v / 20);
+      [["hand", COLORS.slate, "Hand value"], ["learned", COLORS.teal, "Learned critic"]].forEach(([key, color, label]) => {
+        const values = key === "hand" ? hand.energy : learned.energy;
+        const d = values.map((v, i) => `${i ? "L" : "M"}${sx(i).toFixed(2)} ${sy(v).toFixed(2)}`).join(" ");
+        add(svg, "path", { d, fill: "none", stroke: color, "stroke-width": 1.5 });
+        text(svg, box.x0 + 6, box.y0 + 14 + (key === "hand" ? 0 : 14), label, {
+          size: 8.5, fill: color,
+        });
+      });
+      text(svg, box.x0 + box.w, box.y0 + box.h + 30, "Seven-day window", {
+        anchor: "end", size: 9,
+      });
+    }
+
+    {
+      const svg = $("learnDiffChart");
+      const diff = learned.cumulative_net.map((v, i) => v - hand.cumulative_net[i]);
+      const lo = Math.min(0, ...diff);
+      const hi = Math.max(0, ...diff);
+      const pad = Math.max(10, (hi - lo) * 0.08);
+      const { box, yMin, yMax } = chartBox(svg, {
+        yMin: Math.floor(lo - pad), yMax: Math.ceil(hi + pad), h: 160,
+        ticks: 4, labels,
+        format: (v) => `${v >= 0 ? "+" : ""}${Math.round(v)}`,
+      });
+      const sx = (i) => box.x0 + (box.w * i) / Math.max(1, n - 1);
+      const sy = (v) => box.y0 + box.h * (1 - (v - yMin) / Math.max(1e-9, yMax - yMin));
+      line(svg, box.x0, sy(0), box.x0 + box.w, sy(0), COLORS.muted, 1);
+      const d = diff.map((v, i) => `${i ? "L" : "M"}${sx(i).toFixed(2)} ${sy(v).toFixed(2)}`).join(" ");
+      add(svg, "path", { d, fill: "none", stroke: COLORS.rust, "stroke-width": 1.6 });
+      text(svg, box.x0 + box.w, box.y0 + box.h + 30, "Learned − hand · net AUD", {
+        anchor: "end", size: 9,
+      });
+    }
+
+    const finalDiff = learned.cumulative_net[n - 1] - hand.cumulative_net[n - 1];
+    const items = [
+      ["Window", win.label],
+      ["Seed", learning.seed],
+      ["Paired mean", `${win.paired.mean_aud >= 0 ? "+" : ""}${fmt(win.paired.mean_aud, 1)} AUD`],
+      ["95% CI", `[${fmt(win.paired.ci95_low, 0)}, ${fmt(win.paired.ci95_high, 0)}]`],
+      ["Final Δ net", `${finalDiff >= 0 ? "+" : ""}${fmt(finalDiff, 1)} AUD`],
+      ["Hand incremental", `${fmt(hand.incremental_battery_aud, 1)} AUD`],
+      ["Learned incremental", `${fmt(learned.incremental_battery_aud, 1)} AUD`],
+      ["Positive seeds", `${win.paired.positive_seeds}/5`],
+    ];
+    $("learnReadout").innerHTML = items
+      .map(([label, value]) => `<div><span>${label}</span><strong>${value}</strong></div>`)
+      .join("");
+  }
+
+  function initLearning(data) {
+    learning.data = data;
+    const windowSelect = $("learnWindow");
+    Object.entries(data.windows).forEach(([key, win]) => {
+      const option = document.createElement("option");
+      option.value = key;
+      option.textContent = win.label;
+      windowSelect.appendChild(option);
+    });
+    learning.window = Object.keys(data.windows)[0];
+    windowSelect.value = learning.window;
+    const seedSelect = $("learnSeed");
+    Object.keys(data.windows[learning.window].learned).forEach((seed) => {
+      const option = document.createElement("option");
+      option.value = seed;
+      option.textContent = `seed ${seed}`;
+      seedSelect.appendChild(option);
+    });
+    learning.seed = Object.keys(data.windows[learning.window].learned)[0];
+    seedSelect.value = learning.seed;
+    windowSelect.addEventListener("change", () => {
+      learning.window = windowSelect.value;
+      renderLearning();
+    });
+    seedSelect.addEventListener("change", () => {
+      learning.seed = seedSelect.value;
+      renderLearning();
+    });
+    renderLearning();
+  }
+
   // Reveal motion --------------------------------------------------------
   function initReveal() {
     const items = document.querySelectorAll(".reveal");
@@ -899,14 +1001,20 @@
     $("slope").addEventListener("input", renderBoundary);
     initReveal();
     try {
-      const response = await fetch("v49_data.json", { cache: "no-store" });
+      const [response, learningResponse] = await Promise.all([
+        fetch("v49_data.json", { cache: "no-store" }),
+        fetch("v21_learning.json", { cache: "no-store" }),
+      ]);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (!learningResponse.ok) throw new Error(`HTTP ${learningResponse.status}`);
       const data = await response.json();
+      const learningData = await learningResponse.json();
       initReplay(data);
       initFork(data);
       initBids(data);
       initAtlas(data);
       initInverse(data);
+      initLearning(learningData);
     } catch (error) {
       const status = $("replayStatus");
       if (status) {
