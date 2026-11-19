@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="When more freedom costs money: an interactive study of price-contingent battery reserve constraints, local shadow prices, and long-term value.">
-  <title>When More Freedom Costs Money — Battery reserve research</title>
+  <meta name="description" content="Explore how reserve limits change battery bids, cleared dispatch, and long-term value.">
+  <title>When Does a Constraint Improve a Policy? — Battery bidding</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%231c1c1a'/%3E%3Cpath d='M18 32h28M32 18v28' stroke='%23f7f6f3' stroke-width='5'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="v49.css">
   <script defer src="v49.js"></script>
@@ -13,15 +13,11 @@
 <header class="site-header">
   <a class="brand" href="#top">BOUNDARY<span>/</span>BATTERY</a>
   <nav aria-label="Main">
-    <a href="#system">System</a>
+    <a href="#results">Results</a>
+    <a href="#boundary">Explore</a>
     <a href="#learning">Learning</a>
-    <a href="#boundary">Boundary</a>
-    <a href="#bids">Bid lab</a>
-    <a href="#replay">Replay</a>
-    <a href="#atlas">14 events</a>
-    <a href="#counterfactual">Counterfactual</a>
-    <a href="#inverse">Inverse</a>
     <a href="#evidence">Evidence</a>
+    <a class="nav-cta" href="downloads/solar-storage-poster.pdf">Poster</a>
   </nav>
 </header>
 
@@ -29,31 +25,28 @@
   <section class="hero" id="top">
     <div class="hero-copy reveal">
       <p class="kicker">IFT6162 · Reinforcement Learning &amp; Optimal Control · Mila / Université de Montréal</p>
-      <h1>The value of<br><em>a constraint.</em></h1>
-      <p class="lede">More freedom can cost money. This project separates three questions: where a reserve constraint changes the feasible bid, where it changes the cleared action, and where the local shadow price stops predicting long-term value.</p>
+      <h1>When does a constraint <em>improve a policy?</em></h1>
+      <p class="lede">In a price-taking battery simulation, a tuned fixed reserve captures 90.1% of the state-dependent rule’s gain over a fixed 16 MWh reserve.</p>
       <div class="hero-actions">
-        <a class="btn" href="#boundary">Explore the boundary</a>
+        <a class="btn" href="downloads/solar-storage-poster.pdf">Download A1 poster</a>
+        <a href="#boundary">Explore the boundary</a>
       </div>
-      <p class="fine">Retrospective simulation · reused V27 panel · V49.3.2 audit · prospective December test pending</p>
     </div>
-    <aside class="hero-panel reveal">
-      <p class="micro">Exact structural result</p>
-      <div class="hero-number">2.20<span>%</span></div>
-      <p>of total capacity is the only state-of-charge interval where the V46 release rule changes the effective reserve constraint versus <code>R = 16</code>.</p>
-      <div class="hero-rule"></div>
-      <dl>
-        <div><dt>Boundary layer</dt><dd>0.4392 MWh</dd></div>
-        <div><dt>Battery</dt><dd>20 MWh / 5 MW</dd></div>
-        <div><dt>Dispatch</dt><dd>5-minute NSW1</dd></div>
-        <div><dt>Objective</dt><dd>mean − 0.05 · CVaR</dd></div>
-      </dl>
+    <aside class="hero-panel reveal" id="results" aria-label="Mean gain of the state-dependent reserve rule">
+      <p class="micro">Mean gain of the state-dependent rule</p>
+      <div class="baseline-pair">
+        <div><strong>+147.22</strong><span>AUD/event vs fixed 16 MWh</span><small>14/14 wins</small></div>
+        <div><strong>+14.55</strong><span>AUD/event vs tuned 15.80 MWh</span><small>5/14 wins</small></div>
+      </div>
+      <p class="fine">Same 14 reused historical events. The residual day-level interval includes zero.</p>
+      <a href="#atlas">Compare all 14 events</a>
     </aside>
   </section>
 
-  <section class="metrics" aria-label="Headline measurements">
-    <article class="reveal"><strong>+147.22</strong><span>AUD per event versus scalar R = 16</span><small>14 of 14 historical events</small></article>
-    <article class="reveal"><strong>90.1%</strong><span>of the total gain captured by a tuned constant R = 15.80</span><small>feedback superiority is not established</small></article>
-    <article class="reveal"><strong>−0.098</strong><span>Spearman correlation: local shadow price versus realized advantage</span><small>28 selected counterfactual interventions</small></article>
+  <section class="metrics review-path" aria-label="Start here">
+    <article><a href="#system"><strong>How bids clear</strong></a><span>The battery commits offers before seeing the price. Cleared bids change stored energy.</span></article>
+    <article><a href="#boundary"><strong>0.4392 MWh</strong></a><span>The stored-energy range where the rule changes the effective limit versus the fixed 16 MWh reserve.</span></article>
+    <article><a href="#counterfactual"><strong>−584.50 / +833.91 AUD</strong></a><span>Two positive local shadow prices lead to opposite full-event values.</span></article>
   </section>
 
   <nav class="parts-nav reveal" aria-label="Research narrative">
@@ -455,7 +448,7 @@
       </article>
       <article class="evidence-card reveal">
         <span class="tag rust">Joint three-state</span>
-        <h3>No representable case</h3>
+        <h3>49 fixed-weight certificates, 14 unresolved</h3>
         <p>13 of 18 tested configurations are converged fixed-weight certificates; 5 are unconverged. The robust audit gives 49 of 63 converged, 14 unconverged, and zero representable. All report positive tested slack.</p>
       </article>
       <article class="evidence-card reveal">
@@ -488,7 +481,7 @@
         <p>The physical power row bounds protected-band discharge by δ = P<sub>max</sub>Δt / η<sub>d</sub> = 0.4392067575 MWh. Define a<sub>R</sub>(E) = min{δ, max(0, E − R(E))}. If two reserve curves have the same a<sub>R</sub>, they impose the same effective constraint. V46 differs from R = 16 only on 16 &lt; E &lt; 16.439207.</p>
       </details>
       <details>
-        <summary>What does “no representable case” mean here?</summary>
+        <summary>What do the joint fixed-weight certificates cover?</summary>
         <p>It means no tested fixed-weight inverse problem found one common concave V that rationalizes the three target bids in the full 10-band CVaR/charging model. It is not a universal theorem over every CVaR subgradient: the unconverged runs and the unexhausted subgradient space are reported explicitly.</p>
       </details>
       <details>

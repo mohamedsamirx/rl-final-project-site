@@ -675,3 +675,25 @@ body.reveal-ready .reveal.is-visible { opacity: 1; transform: none; }
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
   body.reveal-ready .reveal { opacity: 1; transform: none; }
 }
+
+/* Keep the evidence and poster visible on the first visit. */
+#results { scroll-margin-top: 90px; }
+.hero { min-height: 0; align-items: center; padding: 64px 0 38px; }
+.hero h1 { font-size: clamp(44px, 6vw, 84px); }
+.baseline-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+.baseline-pair > div { border-top: 2px solid var(--teal); padding-top: 8px; }
+.baseline-pair strong { display: block; font-family: var(--serif); font-size: clamp(23px, 3vw, 37px); line-height: 1.1; }
+.baseline-pair span, .baseline-pair small { display: block; margin-top: 5px; }
+.baseline-pair span { font-size: 13px; }
+.review-path strong { font-size: clamp(22px, 2.6vw, 35px); line-height: 1.15; }
+@media (max-width: 720px) {
+  .site-header { gap: 6px; align-items: center; padding: 12px; }
+  .site-header nav { gap: 9px; }
+  .site-header nav a[href="#results"], .site-header nav a[href="#boundary"] { display: inline; }
+  .brand { font-size: 9px; letter-spacing: .04em; }
+  .hero { padding: 26px 0; gap: 18px; }
+  .hero h1 { font-size: clamp(38px, 10vw, 54px); margin-bottom: 12px; }
+  .hero .lede { margin-bottom: 14px; }
+  .hero-panel { padding: 14px; }
+  .hero-actions { gap: 12px; }
+}
